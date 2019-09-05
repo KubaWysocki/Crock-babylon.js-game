@@ -1,40 +1,47 @@
 import {
     Engine,
-    Scene, 
-    Vector3,
-    Color3,
+    Scene,
     SceneLoader,
+    CannonJSPlugin,
+    Vector3,
 } from 'babylonjs'
 
+import * as cannon from 'cannon'
 import 'babylonjs-loaders'
+import 'babylonjs-materials'
 
-import Camera from './components/Camera'
+
+import Player from './components/Player'
 import Light from './components/Light'
 import Ground from './components/Ground'
 import Troll from './components/Troll'
 
-
 const Game = () => {
+
     const canvas = document.getElementById('renderCanvas')
     window.addEventListener( 'click', () => canvas.requestPointerLock() )
 
-    SceneLoader.OnPluginActivatedObservable.addOnce(function (plugin) {
+    let isBPressed = false
+    window.addEventListener( 'keydown', e => e.keyCode === 66 ? isBPressed = true : null )
+    window.addEventListener( 'keyup', e => e.keyCode === 66 ? isBPressed = false : null )
+
+    const engine = new Engine( canvas, true )
+    window.addEventListener( 'resize', () => engine.resize() )
+
+    SceneLoader.OnPluginActivatedObservable.addOnce( plugin => {
         if (plugin.name === "gltf") {
             plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE
         }
     })
 
-    const engine = new Engine( canvas, true )
-    window.addEventListener( 'resize', () => engine.resize() )
-
     const scene = new Scene( engine )
-    scene.gravity = new Vector3(0, -9.8, 0)
+    scene.enablePhysics( null, new CannonJSPlugin( true, 10, cannon ) )
     scene.collisionsEnabled = true
 
     const light = Light( scene )
 
-    const camera = Camera( canvas, scene )
-    const troll = Troll( scene )
+    const player = Player( canvas, scene )
+    const troll = Troll( scene, 5 )
 
     const ground = Ground( scene )
 
@@ -44,6 +51,8 @@ const Game = () => {
                 scene.trolls[i].trollBehavior.move()
             }
         }
+        player.fire( isBPressed )
+
         scene.render()
     })
 }

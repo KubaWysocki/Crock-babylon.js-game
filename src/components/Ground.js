@@ -1,22 +1,24 @@
 import { 
     MeshBuilder,
     StandardMaterial, 
-    Texture 
+    Texture, 
+    PhysicsImpostor
 } from 'babylonjs'
 
-import map from '../img/map.png'
+import "cannon"
+
 import groundImg from '../img/ground.jpg'
 
 const Ground = ( scene ) => {
     const ground = MeshBuilder.CreateGround(
-        'ground',
-        {
-            width: 1000,
-            height: 1000,
-            subdivisions: 100
-        },
-        scene
-    )
+                        'ground',
+                        {
+                            width: 1000,
+                            height: 1000,
+                            subdivisions: 100
+                        },
+                        scene
+                    )
     const groundMaterial = new StandardMaterial( "groundMaterial", scene )
     const texture = new Texture( groundImg, scene )
     texture.uScale = 100
@@ -24,6 +26,13 @@ const Ground = ( scene ) => {
     groundMaterial.diffuseTexture = texture
     ground.material = groundMaterial
     ground.checkCollisions = true
+
+    ground.physicsImpostor = new PhysicsImpostor( 
+                                ground,
+                                PhysicsImpostor.BoxImpostor,
+                                { mass: 0 }, 
+                                scene
+                            )
     // const ground = MeshBuilder.CreateGroundFromHeightMap( 
     //     'ground', 
     //     map, 
