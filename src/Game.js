@@ -41,7 +41,7 @@ const Game = () => {
     const light = Light( scene )
 
     const player = Player( canvas, scene )
-    const troll = Troll( scene, 5 )
+    const troll = Troll( scene, 15 )
 
     const ground = Ground( scene )
 
