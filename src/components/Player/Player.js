@@ -8,13 +8,13 @@ import {
     Texture,
     Ray,
     RayHelper,
-    Color3
+    Color3,
 } from 'babylonjs'
 
 import { FireMaterial } from 'babylonjs-materials'
 
-import particleTexture from '../img/particle.png'
-import fire from '../img/fire.jpeg'
+import fire from '../../img/fire.jpeg'
+import createFireParticles from '../Effects/FireParticles'
 
 const Player = ( canvas, scene ) => {
     const camera = new UniversalCamera( 'player', new Vector3( 0, 4, 0 ), scene )
@@ -40,34 +40,14 @@ const Player = ( canvas, scene ) => {
         camera.speed = .1
         camera.speedLock = performance.now()
         
-
-        setTimeout(() => camera.canFireFireballs = true, 500)
+        setTimeout(() => camera.canFireFireballs = true, 2000)
         setTimeout(() => performance.now() - camera.speedLock > 1000 ? camera.speed = .3 : null, 1000 )
         
         const fireball = new MeshBuilder.CreateSphere( 'fireball', { segments: 16, diameter: 1 }, scene )
             fireball.material = new FireMaterial( 'fireballMaterial', scene )
             fireball.material.diffuseTexture = new Texture( fire, scene )
-            //fireball.visibility = .5
 
-        const fireballParticles = new BABYLON.ParticleSystem("fireballParticles", 2000, scene)
-            fireballParticles.particleTexture = new Texture( particleTexture, scene )
-            fireballParticles.emitter = fireball
-
-            fireballParticles.minEmitBox = new BABYLON.Vector3(-.3, -.3, -.3)
-            fireballParticles.maxEmitBox = new BABYLON.Vector3(.3, .3, .3)
-
-            fireballParticles.minSize = .1
-            fireballParticles.maxSize = .4
-
-            fireballParticles.minLifeTime = .01
-            fireballParticles.maxLifeTime = .3
-
-            fireballParticles.color1 = new BABYLON.Color4(0.7, 0.2, 0, 1.0)
-            fireballParticles.color2 = new BABYLON.Color4( 1, 0.5, 0.5, 1.0)
-            
-            fireballParticles.gravity = new Vector3( 0, 9.81, 0)
-            fireballParticles.emitRate = 1000
-            fireballParticles.start()
+        const fireballParticles = createFireParticles( fireball, '', scene )
 
         const backPosition = this.getFrontPosition(-3)
         const missingShots = () => ((Math.random()*4) -2)
@@ -91,13 +71,10 @@ const Player = ( canvas, scene ) => {
                 new ExecuteCodeAction(
                     { 
                         trigger: ActionManager.OnIntersectionEnterTrigger,  
-                        parameter: troll.trollBehavior.bounder
+                        parameter: troll.trollBehavior.bounder,
                     },
                     () => {
-                        troll.trollBehavior.bounder.dispose()
-                        troll.meshes[0].dispose()
-                        scene.trolls = scene.trolls.filter( troll => troll.trollBehavior.bounder._isDisposed ? false : true )
-                        console.log
+                        troll.trollBehavior.getFireDamage()
                     }
                 )
             )

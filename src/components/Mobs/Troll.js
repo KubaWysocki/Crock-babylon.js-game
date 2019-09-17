@@ -4,6 +4,8 @@ import {
     MeshBuilder,
 } from 'babylonjs'
 
+import createFireParticles from '../Effects/FireParticles'
+
 
 const troll = ( scene, quantity ) => {
     scene.trolls = []
@@ -28,6 +30,7 @@ class trollBehavior {
         this.trollMesh.rotationQuaternion = null
         this.trollMesh.scaling = new Vector3( .025, .025, .025 )
 
+        this.health = 10
         this.speed = .15
         this.animationDelay = performance.now()
         
@@ -71,6 +74,33 @@ class trollBehavior {
             else this.animations[3].play()
             this.animationDelay = currentTime
         }
+    }
+    getFireDamage() {
+        const fireParticles = createFireParticles( this.bounder, 'troll', this.scene )
+        let dmg = 0
+        const fireDamageInterval = setInterval(() => { 
+            if(dmg < 3) {
+                this.health -= 1
+                dmg++    
+                if( this.health < 0 ) {
+                    const fireParticles = createFireParticles( 
+                        new Vector3( this.bounder.position.x, this.bounder.position.y, this.bounder.position.z ), 
+                        'killTroll',
+                        this.scene 
+                    )
+                    setTimeout(() => {
+                        fireParticles.stop()
+                    }, 300);
+                    this.bounder.dispose()
+                    this.trollMesh.dispose()
+                    this.scene.trolls = this.scene.trolls.filter( troll => troll.trollBehavior.bounder._isDisposed ? false : true )
+                }
+            }
+            else {
+                clearInterval( fireDamageInterval )
+                fireParticles.stop()
+            }
+        }, 200 )
     }
 }
 export default troll

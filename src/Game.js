@@ -8,10 +8,10 @@ import {
 import * as cannon from 'cannon'
 import 'babylonjs-loaders'
 
-import Player from './components/Player'
-import Light from './components/Light'
-import Ground from './components/Ground'
-import Troll from './components/Troll'
+import Player from './components/Player/Player'
+import Light from './components/World/Light'
+import Ground from './components/World/Ground'
+import Troll from './components/Mobs/Troll'
 
 const Game = () => {
     const canvas = document.getElementById('renderCanvas')

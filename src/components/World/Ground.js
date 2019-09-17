@@ -7,7 +7,7 @@ import {
 
 import "cannon"
 
-import groundImg from '../img/ground.jpg'
+import groundImg from '../../img/ground.jpg'
 
 const Ground = ( scene ) => {
     const ground = MeshBuilder.CreateGround(
