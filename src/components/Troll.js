@@ -35,18 +35,18 @@ class trollBehavior {
             'boundingBox' + id, 
             {
                 height: 4.6,
-                diameter: 2,
+                diameter: 1.8,
             },
             this.scene
         )
-        this.bounder.isVisible = false
+        this.bounder.trollMesh = this.trollMesh
+        this.bounder.visibility = 0
         this.bounder.checkCollisions = true
 
         this.bounder.position.set( (Math.random()*200)-100, 2.3, (Math.random()*200)-100 )
     }
     move() {
         const player = this.scene.getCameraByName('player')
-
         let direction = player.position.subtract( this.bounder.position )
         direction.y = 0
         let distance = direction.length()
@@ -57,7 +57,7 @@ class trollBehavior {
         this.trollMesh.rotation.y = Math.atan2( direction.x, direction.z )
 
         const currentTime = performance.now()
-        const canAttack =  currentTime - this.animationDelay > 1000
+        const canAttack =  currentTime - this.animationDelay > 2000
 
         if( distance > 30 ) {
             this.animations[0].play()
