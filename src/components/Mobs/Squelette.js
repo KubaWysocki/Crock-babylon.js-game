@@ -1,5 +1,4 @@
 import {
-    SceneLoader, 
     Vector3,
     MeshBuilder,
 } from 'babylonjs'
@@ -7,28 +6,17 @@ import {
 import createFireParticles from '../Effects/FireParticles'
 
 
-const troll = ( scene, quantity ) => {
-    scene.trolls = []
-    for( let i=0; i<quantity; i++ ) {
-        SceneLoader.ImportMeshAsync( "", "./src/models/squelette_lourd/", "scene.gltf", scene )
-            .then( result => {
-                scene.trolls[i] = result
-                new trollBehavior( result, scene, i )
-            })
-    }
-    
-}
-class trollBehavior {
-    constructor( troll, scene, id ) {
-        troll.trollBehavior = this
+class Squelette {
+    constructor( squelette, scene, id ) {
+        squelette.Squelette = this
         
         this.scene = scene
-        this.trollMesh = troll.meshes[0]
-        this.animations = troll.animationGroups
+        this.squeletteMesh = squelette.meshes[0]
+        this.animations = squelette.animationGroups
 
-        this.trollMesh.name = 'troll' + id
-        this.trollMesh.rotationQuaternion = null
-        this.trollMesh.scaling = new Vector3( .025, .025, .025 )
+        this.squeletteMesh.name = 'squelette' + id
+        this.squeletteMesh.rotationQuaternion = null
+        this.squeletteMesh.scaling = new Vector3( .025, .025, .025 )
 
         this.health = 10
         this.speed = .15
@@ -40,9 +28,9 @@ class trollBehavior {
                 height: 4.6,
                 diameter: 1.8,
             },
-            this.scene
+            scene
         )
-        this.bounder.trollMesh = this.trollMesh
+        this.bounder.squeletteMesh = this.squeletteMesh
         this.bounder.visibility = 0
         this.bounder.checkCollisions = true
 
@@ -55,9 +43,10 @@ class trollBehavior {
         let distance = direction.length()
         let dir = direction.normalize()
 
-        this.trollMesh.position.set( this.bounder.position.x, this.bounder.position.y - 2.3, this.bounder.position.z )
+        this.squeletteMesh.position.set( this.bounder.position.x, this.bounder.position.y - 2.3, this.bounder.position.z )
 
-        this.trollMesh.rotation.y = Math.atan2( direction.x, direction.z )
+        //change to rotationQuaternion
+        this.squeletteMesh.rotation.y = Math.atan2( direction.x, direction.z )
 
         const currentTime = performance.now()
         const canAttack =  currentTime - this.animationDelay > 2000
@@ -76,24 +65,23 @@ class trollBehavior {
         }
     }
     getFireDamage() {
-        const fireParticles = createFireParticles( this.bounder, 'troll', this.scene )
-        let dmg = 0
+        const fireParticles = createFireParticles( this.bounder, 'squelette', this.scene )
+        let hitPoints = 0
         const fireDamageInterval = setInterval(() => { 
-            if(dmg < 3) {
+            if(hitPoints < 3) {
                 this.health -= 1
-                dmg++    
+                hitPoints++    
                 if( this.health < 0 ) {
-                    const fireParticles = createFireParticles( 
+                    const deadParticles = createFireParticles( 
                         new Vector3( this.bounder.position.x, this.bounder.position.y, this.bounder.position.z ), 
-                        'killTroll',
+                        'killSquelette',
                         this.scene 
                     )
-                    setTimeout(() => {
-                        fireParticles.stop()
-                    }, 300);
+                    setTimeout(() => deadParticles.stop(), 300)
+
                     this.bounder.dispose()
-                    this.trollMesh.dispose()
-                    this.scene.trolls = this.scene.trolls.filter( troll => troll.trollBehavior.bounder._isDisposed ? false : true )
+                    this.squeletteMesh.dispose()
+                    this.scene.squelettes = this.scene.squelettes.filter( squelette => squelette.Squelette.bounder._isDisposed ? false : true )
                 }
             }
             else {
@@ -103,4 +91,4 @@ class trollBehavior {
         }, 200 )
     }
 }
-export default troll
+export default Squelette

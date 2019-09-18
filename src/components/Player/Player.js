@@ -66,15 +66,15 @@ const Player = ( canvas, scene ) => {
             fireball.getAbsolutePosition()
         )
         fireball.actionManager = new ActionManager( scene )
-        scene.trolls.forEach( troll => {
+        scene.squelettes.forEach( squelette => {
             fireball.actionManager.registerAction(
                 new ExecuteCodeAction(
                     { 
                         trigger: ActionManager.OnIntersectionEnterTrigger,  
-                        parameter: troll.trollBehavior.bounder,
+                        parameter: squelette.Squelette.bounder,
                     },
                     () => {
-                        troll.trollBehavior.getFireDamage()
+                        squelette.Squelette.getFireDamage()
                     }
                 )
             )
@@ -101,7 +101,7 @@ const Player = ( canvas, scene ) => {
         const pickInfo = scene.pickWithRay( ray )
         if( pickInfo.pickedMesh ){
             if( pickInfo.pickedMesh.name.startsWith('boundingBox') ){
-                pickInfo.pickedMesh.trollMesh.dispose()
+                pickInfo.pickedMesh.squeletteMesh.dispose()
                 pickInfo.pickedMesh.dispose()
             }
         }

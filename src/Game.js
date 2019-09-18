@@ -1,8 +1,8 @@
 import {
     Engine,
     Scene,
-    SceneLoader,
     CannonJSPlugin,
+    Vector3,
 } from 'babylonjs'
 
 import * as cannon from 'cannon'
@@ -11,9 +11,10 @@ import 'babylonjs-loaders'
 import Player from './components/Player/Player'
 import Light from './components/World/Light'
 import Ground from './components/World/Ground'
-import Troll from './components/Mobs/Troll'
 
-const Game = () => {
+import ModelLoader from './components/Loaders/ModelLoadel'
+
+function Game () {
     const canvas = document.getElementById('renderCanvas')
     window.addEventListener( 'click', () => canvas.requestPointerLock() )
 
@@ -32,33 +33,27 @@ const Game = () => {
         }
     })
 
-    SceneLoader.OnPluginActivatedObservable.addOnce( plugin => 
-        plugin.name === "gltf" ?  plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE : null )
-
     const engine = new Engine( canvas, true )
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
-    scene.enablePhysics( null, new CannonJSPlugin( true, 10, cannon ))
     scene.collisionsEnabled = true
+    scene.enablePhysics( new Vector3( 0, -9.81, 0 ), new CannonJSPlugin( true, 10, cannon ))
 
     const light = Light( scene )
     const ground = Ground( scene )
 
     const player = Player( canvas, scene )
-    const troll = Troll( scene, 15 )
 
+    ModelLoader( scene ).then(() => {
+        engine.runRenderLoop( () => {
+            for( let i=0; i<scene.squelettes.length; i++ ) scene.squelettes[i].Squelette.move()
+
+            player.fireFireballs( isBPressed )
+            player.fireLaser( isFPressed )
     
-    engine.runRenderLoop( () => {
-        for( let i=0; i<scene.trolls.length; i++ ){
-            if( scene.trolls[i] ){
-                scene.trolls[i].trollBehavior.move()
-            }
-        }
-        player.fireFireballs( isBPressed )
-        player.fireLaser( isFPressed )
-
-        scene.render()
+            scene.render()
+        })
     })
 }
 export default Game
