@@ -12,7 +12,7 @@ import Player from './components/Player/Player'
 import Light from './components/World/Light'
 import Ground from './components/World/Ground'
 
-import ModelLoader from './components/Loaders/ModelLoadel'
+import ModelLoader from './components/Loaders/ModelLoader'
 
 function Game () {
     const canvas = document.getElementById('renderCanvas')

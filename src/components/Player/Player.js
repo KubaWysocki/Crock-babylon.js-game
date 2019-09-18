@@ -9,12 +9,15 @@ import {
     Ray,
     RayHelper,
     Color3,
+    Sound,
 } from 'babylonjs'
 
 import { FireMaterial } from 'babylonjs-materials'
 
 import fire from '../../img/fire.jpeg'
 import createFireParticles from '../Effects/FireParticles'
+
+import fireballSound from '../../audio/fireball.wav'
 
 const Player = ( canvas, scene ) => {
     const camera = new UniversalCamera( 'player', new Vector3( 0, 4, 0 ), scene )
@@ -33,6 +36,7 @@ const Player = ( canvas, scene ) => {
     camera.speed = .3
     camera.speedLock = performance.now()
     camera.canFireFireballs = true
+    camera.fireballSound = new Sound('fireballSound', fireballSound, scene )
 
     camera.fireFireballs = function( isBPressed ) {
         if( !isBPressed || !camera.canFireFireballs ) return
@@ -65,7 +69,9 @@ const Player = ( canvas, scene ) => {
             forceVector.multiplyByFloats( 1.2, 1.2, 1.2 ),
             fireball.getAbsolutePosition()
         )
+        
         fireball.actionManager = new ActionManager( scene )
+
         scene.squelettes.forEach( squelette => {
             fireball.actionManager.registerAction(
                 new ExecuteCodeAction(
@@ -79,6 +85,7 @@ const Player = ( canvas, scene ) => {
                 )
             )
         })
+        this.fireballSound.play()
         setTimeout(() => fireball.dispose(), 1500)
     }
 
