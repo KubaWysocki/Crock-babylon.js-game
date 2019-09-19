@@ -19,39 +19,44 @@ import createFireParticles from '../Effects/FireParticles'
 
 import fireballSound from '../../audio/fireball.wav'
 
-const Player = ( canvas, scene ) => {
-    const camera = new UniversalCamera( 'player', new Vector3( 0, 4, 0 ), scene )
-    camera.attachControl( canvas, false )
+class Player extends UniversalCamera {
+    constructor( canvas, name, position, scene ){
+        super( name, position, scene )
+        this.attachControl( canvas, false )
 
-    camera.keysUp = [87]
-    camera.keysDown = [83]
-    camera.keysRight = [68]
-    camera.keysLeft = [65]
+        this.scene = scene
 
-    camera.applyGravity = true
-    camera.ellipsoid = new Vector3(2, 2, 2)
-    camera.checkCollisions = true
-    camera.angularSensibility = 5000
-    
-    camera.speed = .3
-    camera.speedLock = performance.now()
-    camera.canFireFireballs = true
-    camera.fireballSound = new Sound('fireballSound', fireballSound, scene )
+        this.keysUp = [87]
+        this.keysDown = [83]
+        this.keysRight = [68]
+        this.keysLeft = [65]
 
-    camera.fireFireballs = function( isBPressed ) {
-        if( !isBPressed || !camera.canFireFireballs ) return
-        camera.canFireFireballs = false
-        camera.speed = .1
-        camera.speedLock = performance.now()
+        this.applyGravity = true
+        this.ellipsoid = new Vector3(2, 2, 2)
+        this.checkCollisions = true
+        this.angularSensibility = 5000
         
-        setTimeout(() => camera.canFireFireballs = true, 2000)
-        setTimeout(() => performance.now() - camera.speedLock > 1000 ? camera.speed = .3 : null, 1000 )
-        
-        const fireball = new MeshBuilder.CreateSphere( 'fireball', { segments: 16, diameter: 1 }, scene )
-            fireball.material = new FireMaterial( 'fireballMaterial', scene )
-            fireball.material.diffuseTexture = new Texture( fire, scene )
+        this.speed = .3
+        this.speedLock
+        this.canFireFireballs = true
+        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
+        this.canFireLaser = true
+    }
 
-        const fireballParticles = createFireParticles( fireball, '', scene )
+    fireFireballs( isBPressed ) {
+        if( !isBPressed || !this.canFireFireballs ) return
+        this.canFireFireballs = false
+        this.speed = .1
+        this.speedLock = performance.now()
+        
+        setTimeout(() => this.canFireFireballs = true, 1000)
+        setTimeout(() => performance.now() - this.speedLock >= 1500 ? this.speed = .3 : null, 1500 )
+        
+        const fireball = new MeshBuilder.CreateSphere( 'fireball', { segments: 16, diameter: 1 }, this.scene )
+            fireball.material = new FireMaterial( 'fireballMaterial', this.scene )
+            fireball.material.diffuseTexture = new Texture( fire, this.scene )
+
+        const fireballParticles = createFireParticles( fireball, '', this.scene )
 
         const backPosition = this.getFrontPosition(-3)
         const missingShots = () => ((Math.random()*4) -2)
@@ -63,16 +68,15 @@ const Player = ( canvas, scene ) => {
             fireball,
             PhysicsImpostor.SphereImpostor,
             { mass: 1 },
-            scene
+            this.scene
         )
         fireball.physicsImpostor.applyImpulse(
             forceVector.multiplyByFloats( 1.2, 1.2, 1.2 ),
             fireball.getAbsolutePosition()
         )
         
-        fireball.actionManager = new ActionManager( scene )
-
-        scene.squelettes.forEach( squelette => {
+        fireball.actionManager = new ActionManager( this.scene )
+        this.scene.squelettes.forEach( squelette => {
             fireball.actionManager.registerAction(
                 new ExecuteCodeAction(
                     { 
@@ -89,13 +93,11 @@ const Player = ( canvas, scene ) => {
         setTimeout(() => fireball.dispose(), 1500)
     }
 
-    camera.canFireLaser = true
+    fireLaser( isFPressed ) {
+        if( !isFPressed || !this.canFireLaser ) return
+        this.canFireLaser = false
 
-    camera.fireLaser = function( isFPressed ) {
-        if( !isFPressed || !camera.canFireLaser ) return
-        camera.canFireLaser = false
-
-        setTimeout(() => camera.canFireLaser = true, 500)
+        setTimeout(() => this.canFireLaser = true, 500)
 
         const direction = this.getFrontPosition(10).subtract( this.position )
             direction.y = 0
@@ -103,18 +105,16 @@ const Player = ( canvas, scene ) => {
 
         const ray = new Ray( origin, direction, 100 )
         const rayHelper = new RayHelper( ray )
-        rayHelper.show( scene, new Color3.Red )
+        rayHelper.show( this.scene, new Color3.Red )
 
-        const pickInfo = scene.pickWithRay( ray )
+        const pickInfo = this.scene.pickWithRay( ray )
         if( pickInfo.pickedMesh ){
             if( pickInfo.pickedMesh.name.startsWith('boundingBox') ){
                 pickInfo.pickedMesh.squeletteMesh.dispose()
                 pickInfo.pickedMesh.dispose()
             }
         }
-
         setTimeout(() => rayHelper.hide(), 200)
     }
-    return camera
 }
 export default Player

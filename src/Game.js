@@ -43,7 +43,7 @@ function Game () {
     const light = Light( scene )
     const ground = Ground( scene )
 
-    const player = Player( canvas, scene )
+    const player = new Player( canvas, 'player', new Vector3( 0,4,0 ), scene )
 
     ModelLoader( scene ).then(() => {
         engine.runRenderLoop( () => {
@@ -51,7 +51,7 @@ function Game () {
 
             player.fireFireballs( isBPressed )
             player.fireLaser( isFPressed )
-    
+
             scene.render()
         })
     })
