@@ -32,7 +32,7 @@ class Player extends UniversalCamera {
         this.keysLeft = [65]
 
         this.applyGravity = true
-        this.ellipsoid = new Vector3(2, 2, 2)
+        this.ellipsoid = new Vector3(1, 2, 1)
         this.checkCollisions = true
         this.angularSensibility = 5000
         
@@ -61,8 +61,8 @@ class Player extends UniversalCamera {
         const backPosition = this.getFrontPosition(-3)
         const missingShots = () => ((Math.random()*4) -2)
         fireball.position =  new Vector3( backPosition.x + missingShots(), this.position.y+1, backPosition.z + missingShots() )
-        const forceVector = this.getFrontPosition(10).subtract( fireball.position )
-            forceVector.y += 5
+        const forceVector = this.getFrontPosition(12).subtract( fireball.position )
+            forceVector.y += 4
 
         fireball.physicsImpostor = new PhysicsImpostor(
             fireball,
@@ -71,7 +71,7 @@ class Player extends UniversalCamera {
             this.scene
         )
         fireball.physicsImpostor.applyImpulse(
-            forceVector.multiplyByFloats( 1.2, 1.2, 1.2 ),
+            forceVector,
             fireball.getAbsolutePosition()
         )
         

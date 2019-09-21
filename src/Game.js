@@ -37,8 +37,8 @@ function Game () {
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
-    scene.collisionsEnabled = true
-    scene.enablePhysics( new Vector3( 0, -9.81, 0 ), new CannonJSPlugin( true, 10, cannon ))
+    scene.gravity = new Vector3( 0, -.2, 0 )
+    scene.enablePhysics( null, new CannonJSPlugin(true, 10, cannon) )
 
     const light = Light( scene )
     const ground = Ground( scene )

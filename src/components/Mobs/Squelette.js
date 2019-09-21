@@ -1,56 +1,61 @@
 import {
     Vector3,
     MeshBuilder,
+    Quaternion,
+    PhysicsImpostor
 } from 'babylonjs'
 
 import createFireParticles from '../Effects/FireParticles'
-
 
 class Squelette {
     constructor( squelette, scene, id ) {
         squelette.Squelette = this
         
         this.scene = scene
+        this.player = this.scene.getCameraByName('player')
+        
         this.squeletteMesh = squelette.meshes[0]
-        this.animations = squelette.animationGroups
-
         this.squeletteMesh.name = 'squelette' + id
-        this.squeletteMesh.rotationQuaternion = null
         this.squeletteMesh.scaling = new Vector3( .025, .025, .025 )
 
         this.health = 10
         this.speed = .15
+
+        this.animations = squelette.animationGroups
         this.animationDelay = performance.now()
         
         this.bounder = new MeshBuilder.CreateCylinder(
             'boundingBox' + id, 
             {
                 height: 4.6,
-                diameter: 1.8,
+                diameter: 2,
             },
-            scene
+            this.scene
         )
         this.bounder.squeletteMesh = this.squeletteMesh
         this.bounder.visibility = 0
         this.bounder.checkCollisions = true
+        this.bounder.position.set( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
 
-        this.bounder.position.set( (Math.random()*200)-100, 2.3, (Math.random()*200)-100 )
+        this.physicsImpostor = new PhysicsImpostor(
+            this.bounder,
+            PhysicsImpostor.CylinderImpostor,
+            { mass: 1, friction: 1, restitution: 0 },
+            this.scene
+        )
     }
     move() {
-        const player = this.scene.getCameraByName('player')
-        let direction = player.position.subtract( this.bounder.position )
-        direction.y = 0
+        let direction = this.player.position.subtract( this.bounder.position )
+            direction.y = 0
         let distance = direction.length()
         let dir = direction.normalize()
 
-        this.squeletteMesh.position.set( this.bounder.position.x, this.bounder.position.y - 2.3, this.bounder.position.z )
-
-        //change to rotationQuaternion
-        this.squeletteMesh.rotation.y = Math.atan2( direction.x, direction.z )
-
+        this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Down(), 0)
+        this.squeletteMesh.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), Math.atan2( dir.x, dir.z ))
+        
         const currentTime = performance.now()
         const canAttack =  currentTime - this.animationDelay > 2000
-
+        
         if( distance > 30 ) {
             this.animations[0].play()
         }
@@ -63,6 +68,7 @@ class Squelette {
             else this.animations[3].play()
             this.animationDelay = currentTime
         }
+        this.squeletteMesh.position.set( this.bounder.position.x, this.bounder.position.y - 2.3, this.bounder.position.z )
     }
     getFireDamage() {
         const fireParticles = createFireParticles( this.bounder, 'squelette', this.scene )

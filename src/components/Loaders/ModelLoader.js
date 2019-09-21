@@ -18,7 +18,7 @@ const ModelLoader = ( scene ) => {
         })
         .catch( err => console.log(err) )
         
-    const skeletons = new Array(10).fill().map( importSqueletteAsync )
+    const skeletons = new Array(5).fill().map( importSqueletteAsync )
     return Promise.all( skeletons )
 }
 export default ModelLoader
