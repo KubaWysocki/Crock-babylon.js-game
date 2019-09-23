@@ -9,48 +9,37 @@ import * as cannon from 'cannon'
 import 'babylonjs-loaders'
 
 import Player from './components/Player/Player'
-import Light from './components/World/Light'
-import Ground from './components/World/Ground'
+import UserControls from './components/Player/UserControls'
 
-import ModelLoader from './components/Loaders/ModelLoader'
+import createLight from './components/World/createLight'
+import createGround from './components/World/createGround'
+
+import modelLoader from './components/Loaders/modelLoader'
 
 function Game () {
     const canvas = document.getElementById('renderCanvas')
     window.addEventListener( 'click', () => canvas.requestPointerLock() )
-
-    let isBPressed = false
-    let isFPressed = false
-    window.addEventListener( 'keydown', e => {
-        switch( e.keyCode ){
-            case 66: isBPressed = true; break
-            case 70: isFPressed = true; break
-        }
-    })
-    window.addEventListener( 'keyup', e => {
-        switch( e.keyCode ){
-            case 66: isBPressed = false; break
-            case 70: isFPressed = false; break
-        }
-    })
-
+    
     const engine = new Engine( canvas, true )
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
     scene.gravity = new Vector3( 0, -.2, 0 )
-    scene.enablePhysics( null, new CannonJSPlugin(true, 10, cannon) )
+    scene.enablePhysics( null, new CannonJSPlugin( true, 10, cannon ))
 
-    const light = Light( scene )
-    const ground = Ground( scene )
+    createLight( scene )
+    createGround( scene )
 
-    const player = new Player( canvas, 'player', new Vector3( 0,4,0 ), scene )
+    const player = new Player( canvas, scene )
+    const controls = new UserControls()
 
-    ModelLoader( scene ).then(() => {
-        engine.runRenderLoop( () => {
-            for( let i=0; i<scene.squelettes.length; i++ ) scene.squelettes[i].Squelette.move()
 
-            player.fireFireballs( isBPressed )
-            player.fireLaser( isFPressed )
+    modelLoader( scene ).then(() => {
+        engine.runRenderLoop(() => {
+            scene.squelettes.forEach( squelette => squelette.Squelette.move())
+
+            player.fireFireballs( controls.isBPressed )
+            player.fireLaser( controls.isFPressed )
 
             scene.render()
         })

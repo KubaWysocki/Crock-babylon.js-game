@@ -4,10 +4,10 @@ import {
     ParticleSystem,
     Color4
 } from 'babylonjs'
+
 import particleTexture from '../../img/particle.png'
 
-
-const FireParticles = ( emitter, type, scene ) => {
+const createFireParticles = ( emitter, type, startOnCreate, scene ) => {
     const fireParticles = new ParticleSystem( "fireParticles", 1500, scene )
         fireParticles.particleTexture = new Texture( particleTexture, scene )
         
@@ -35,8 +35,8 @@ const FireParticles = ( emitter, type, scene ) => {
     fireParticles.color2 = new Color4( 1, 0, 0, 1)
 
     fireParticles.gravity = new Vector3( 0, 9.81, 0)
-    fireParticles.start()
+    if( startOnCreate ) fireParticles.start()
 
     return fireParticles
 }
-export default FireParticles
+export default createFireParticles

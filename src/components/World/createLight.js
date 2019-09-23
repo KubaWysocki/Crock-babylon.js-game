@@ -7,7 +7,7 @@ import {
     HemisphericLight 
 } from 'babylonjs'
 
-const Light = ( scene ) => {
+const createLight = ( scene ) => {
     const light1 = new PointLight( 'light1', new Vector3(0,0,0), scene )
     light1.diffuse = new Color3.White
     light1.specular = new Color3.White
@@ -26,7 +26,5 @@ const Light = ( scene ) => {
     sphere.checkCollisions = true
 
     light1.parent = sphere
-
-    return sphere
 }
-export default Light
+export default createLight

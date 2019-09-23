@@ -15,14 +15,14 @@ import {
 import { FireMaterial } from 'babylonjs-materials'
 
 import fire from '../../img/fire.jpeg'
-import createFireParticles from '../Effects/FireParticles'
+import createFireParticles from '../Effects/createFireParticles'
 
 import fireballSound from '../../audio/fireball.wav'
 
 class Player extends UniversalCamera {
-    constructor( canvas, name, position, scene ){
+    constructor( canvas, scene, name = 'player', position = new Vector3( 0, 4, 0 )) {
         super( name, position, scene )
-        this.attachControl( canvas, false )
+        this.attachControl( canvas )
 
         this.scene = scene
 
@@ -56,12 +56,12 @@ class Player extends UniversalCamera {
             fireball.material = new FireMaterial( 'fireballMaterial', this.scene )
             fireball.material.diffuseTexture = new Texture( fire, this.scene )
 
-        const fireballParticles = createFireParticles( fireball, '', this.scene )
+        createFireParticles( fireball, null, true, this.scene )
 
         const backPosition = this.getFrontPosition(-3)
-        const missingShots = () => ((Math.random()*4) -2)
-        fireball.position =  new Vector3( backPosition.x + missingShots(), this.position.y+1, backPosition.z + missingShots() )
-        const forceVector = this.getFrontPosition(12).subtract( fireball.position )
+        const missingShots = () => Math.random()*4 -2
+        fireball.position = new Vector3( backPosition.x + missingShots(), this.position.y+1, backPosition.z + missingShots() )
+        const forceVector = this.getFrontPosition(15).subtract( fireball.position )
             forceVector.y += 4
 
         fireball.physicsImpostor = new PhysicsImpostor(
@@ -70,25 +70,24 @@ class Player extends UniversalCamera {
             { mass: 1 },
             this.scene
         )
+        fireball.physicsImpostor.physicsBody.collisionFilterMask = 2
         fireball.physicsImpostor.applyImpulse(
             forceVector,
-            fireball.getAbsolutePosition()
+            fireball.position
         )
         
         fireball.actionManager = new ActionManager( this.scene )
-        this.scene.squelettes.forEach( squelette => {
+        this.scene.squelettes.forEach( squelette => 
             fireball.actionManager.registerAction(
                 new ExecuteCodeAction(
                     { 
                         trigger: ActionManager.OnIntersectionEnterTrigger,  
                         parameter: squelette.Squelette.bounder,
                     },
-                    () => {
-                        squelette.Squelette.getFireDamage()
-                    }
+                    () => squelette.Squelette.getFireDamage()
                 )
             )
-        })
+        )
         this.fireballSound.play()
         setTimeout(() => fireball.dispose(), 1500)
     }
@@ -110,8 +109,7 @@ class Player extends UniversalCamera {
         const pickInfo = this.scene.pickWithRay( ray )
         if( pickInfo.pickedMesh ){
             if( pickInfo.pickedMesh.name.startsWith('boundingBox') ){
-                pickInfo.pickedMesh.squeletteMesh.dispose()
-                pickInfo.pickedMesh.dispose()
+                pickInfo.pickedMesh.Squelette.death()
             }
         }
         setTimeout(() => rayHelper.hide(), 200)

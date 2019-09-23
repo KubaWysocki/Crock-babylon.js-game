@@ -10,7 +10,7 @@ import {
 
 import groundImg from '../../img/ground.jpg'
 
-const Ground = ( scene ) => {
+const createGround = ( scene ) => {
     const ground = MeshBuilder.CreateGround(
         'ground',
         {
@@ -34,13 +34,15 @@ const Ground = ( scene ) => {
             { mass: 0, restitution: 0 }, 
             scene
         )
+        ground.physicsImpostor.physicsBody.collisionFilterGroup = -1
+
     const rampMaterial = new StandardMaterial( 'rampMaterial', scene )
         rampMaterial.diffuseColor = new Color3.Purple()
         rampMaterial.backFaceCulling = false
-    const ramp = MeshBuilder.CreateGround( 'ramp', { width: 10, height: 20 }, scene )
+    const ramp = MeshBuilder.CreateGround( 'ramp', { width: 10, height: 50 }, scene )
         ramp.material = rampMaterial
-        ramp.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Left(), Math.PI / 16 )
-        ramp.position.set( 10, 2, 10 )
+        ramp.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Left(), Math.PI / 10 )
+        ramp.position.set( 20, 7, 40 )
         ramp.checkCollisions = true
         ramp.physicsImpostor = new PhysicsImpostor( 
             ramp,
@@ -48,5 +50,6 @@ const Ground = ( scene ) => {
             { mass: 0, restitution: 0, friction: 1 }, 
             scene
         )
+        ramp.physicsImpostor.physicsBody.collisionFilterGroup = -1
 }
-export default Ground
+export default createGround

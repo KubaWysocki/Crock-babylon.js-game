@@ -4,7 +4,7 @@ import {
 
 import Squelette from '../Mobs/Squelette'
 
-const ModelLoader = ( scene ) => {
+const modelLoader = ( scene ) => {
     SceneLoader.OnPluginActivatedObservable.addOnce( plugin => 
         plugin.name === "gltf" ?  plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE : null )
     
@@ -21,4 +21,4 @@ const ModelLoader = ( scene ) => {
     const skeletons = new Array(5).fill().map( importSqueletteAsync )
     return Promise.all( skeletons )
 }
-export default ModelLoader
+export default modelLoader
