@@ -24,7 +24,6 @@ function Game () {
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
-    scene.gravity = new Vector3( 0, -.2, 0 )
     scene.enablePhysics( null, new CannonJSPlugin( true, 10, cannon ))
 
     createLight( scene )
@@ -38,6 +37,7 @@ function Game () {
         engine.runRenderLoop(() => {
             scene.squelettes.forEach( squelette => squelette.Squelette.move())
 
+            player.move( controls )
             player.fireFireballs( controls.isBPressed )
             player.fireLaser( controls.isFPressed )
 

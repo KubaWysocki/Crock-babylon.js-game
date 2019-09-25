@@ -13,11 +13,7 @@ import groundImg from '../../img/ground.jpg'
 const createGround = ( scene ) => {
     const ground = MeshBuilder.CreateGround(
         'ground',
-        {
-            width: 1000,
-            height: 1000,
-            subdivisions: 100
-        },
+        { width: 1000, height: 1000, subdivisions: 100 },
         scene
     )
     const groundMaterial = new StandardMaterial( 'groundMaterial', scene )
@@ -26,12 +22,11 @@ const createGround = ( scene ) => {
         texture.vScale = 100
         groundMaterial.diffuseTexture = texture
         ground.material = groundMaterial
-        ground.checkCollisions = true
 
         ground.physicsImpostor = new PhysicsImpostor( 
             ground,
             PhysicsImpostor.BoxImpostor,
-            { mass: 0, restitution: 0 }, 
+            { mass: 0, friction: 1, restitution: 0 }, 
             scene
         )
         ground.physicsImpostor.physicsBody.collisionFilterGroup = -1
@@ -43,11 +38,10 @@ const createGround = ( scene ) => {
         ramp.material = rampMaterial
         ramp.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Left(), Math.PI / 10 )
         ramp.position.set( 20, 7, 40 )
-        ramp.checkCollisions = true
         ramp.physicsImpostor = new PhysicsImpostor( 
             ramp,
             PhysicsImpostor.BoxImpostor,
-            { mass: 0, restitution: 0, friction: 1 }, 
+            { mass: 0, friction: 1, restitution: 0 }, 
             scene
         )
         ramp.physicsImpostor.physicsBody.collisionFilterGroup = -1

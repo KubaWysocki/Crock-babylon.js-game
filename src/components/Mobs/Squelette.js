@@ -23,18 +23,14 @@ class Squelette {
         this.animationDelay = performance.now()
         
         this.health = 10
-        this.speed = .15
+        this.speed = .1
         
         this.bounder = new MeshBuilder.CreateCylinder(
             'boundingBox' + id, 
-            {
-                height: 4.6,
-                diameter: 2,
-            },
+            { height: 4.6, diameter: 2 },
             this.scene
         )
         this.bounder.visibility = 0
-        this.bounder.checkCollisions = true
         this.bounder.Squelette = this
         this.bounder.position.set( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
 
@@ -52,6 +48,7 @@ class Squelette {
             (e) => console.log(e)
         )
     }
+
     move() {
         let direction = this.player.position.subtract( this.bounder.position )
             direction.y = 0
@@ -61,8 +58,8 @@ class Squelette {
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Down(), 0)
         this.squeletteMeshes[0].rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), Math.atan2( dir.x, dir.z ))
         
-        const currentTime = performance.now()
-        const canAttack =  currentTime - this.animationDelay > 1500
+        let currentTime = performance.now()
+        let canAttack =  currentTime - this.animationDelay > 1500
         
         if( distance > 30 ) {
             this.animations[0].play()
@@ -76,8 +73,10 @@ class Squelette {
             else this.animations[3].play()
             this.animationDelay = currentTime
         }
-        this.squeletteMeshes[0].position.set( this.bounder.position.x, this.bounder.position.y - 2.3, this.bounder.position.z )
+        this.squeletteMeshes[0].position = new Vector3().copyFrom( this.bounder.position )
+        this.squeletteMeshes[0].position.y -= 2.3
     }
+
     getFireDamage() {
         this.fireParticles.start()
         let hitPoints = 0
@@ -87,7 +86,7 @@ class Squelette {
                 hitPoints++    
                 if( this.health < 0 ) {
                     const deadParticles = createFireParticles( 
-                        new Vector3( this.bounder.position.x, this.bounder.position.y, this.bounder.position.z ), 
+                        new Vector3().copyFrom( this.bounder.position ), 
                         'killSquelette',
                         true,
                         this.scene 
@@ -102,12 +101,13 @@ class Squelette {
             }
         }, 200 )
     }
+    
     death() {
         this.bounder.dispose()
         this.squeletteMeshes.forEach( mesh => mesh.dispose())
         this.animations.forEach( animation => animation.dispose())
         this.skeletons.forEach( skeleton => skeleton.dispose())
-        this.scene.squelettes = this.scene.squelettes.filter( squelette => squelette.Squelette.bounder._isDisposed ? false : true )
+        this.scene.squelettes = this.scene.squelettes.filter( squelette => squelette.meshes[0]._isDisposed ? false : true )
         delete this
     }
 }
