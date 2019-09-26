@@ -23,27 +23,16 @@ import fireballSound from '../../audio/fireball.wav'
 class Player extends UniversalCamera {
     constructor( canvas, scene, name = 'player', position = new Vector3( -10, 14, -10 )) {
         super( name, position, scene )
+        
         this.attachControl( canvas )
-
-        this.scene = scene
-
         this.ellipsoid = new Vector3(.1, .1, .1)
         this.angularSensibility = 5000
+        
+        this.scene = scene
+        
+        this.createBounderAndPhysics()
 
-        this.bounder = MeshBuilder.CreateCylinder(
-            'playerBounder',
-            { height: 4, diameter: 2 },
-            this.scene
-        )
-        this.bounder.isVisible = false
-        this.bounder.position = new Vector3().copyFrom( this.position )
-        this.bounder.position.y -= 2
-        this.bounder.physicsImpostor = new PhysicsImpostor(
-            this.bounder,
-            PhysicsImpostor.CylinderImpostor,
-            { mass: 1, friction: 1, restitution: 0 },
-            this.scene
-        )
+        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
         
         this.health = 20
         this.speed = .15
@@ -51,9 +40,34 @@ class Player extends UniversalCamera {
         this.canJump = true
         this.canFireFireballs = true
         this.canFireLaser = true
-        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
     }
 
+    createBounderAndPhysics() {
+        const bounder = MeshBuilder.CreateCylinder(
+            'playerBounder',
+            { height: 4, diameter: 2 },
+            this.scene
+        )
+        bounder.isVisible = false
+        bounder.position = new Vector3().copyFrom( this.position )
+        bounder.position.y -= 2
+
+        this.physicsImpostor = new PhysicsImpostor(
+            bounder,
+            PhysicsImpostor.CylinderImpostor,
+            { mass: 1, friction: 1, restitution: 0 },
+            this.scene
+        )
+
+        this.bounder = bounder
+    }
+
+    behavior({ isBPressed, isFPressed, ...moveControls }) {
+        this.move( moveControls )
+        this.fireFireballs( isBPressed )
+        this.fireLaser( isFPressed )
+    }
+    
     move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
 
@@ -75,7 +89,7 @@ class Player extends UniversalCamera {
             const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.1 )
             let pickInfo = this.scene.pickWithRay( ray )
             if( pickInfo.pickedMesh ){
-                this.bounder.physicsImpostor.applyImpulse( new Vector3(0,8,0), this.bounder.position )
+                this.physicsImpostor.applyImpulse( new Vector3(0,8,0), this.bounder.position )
                 this.canJump = false
                 setTimeout(() => this.canJump = true, 600)
             }

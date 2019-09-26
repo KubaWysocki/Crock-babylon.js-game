@@ -1,6 +1,4 @@
-import { 
-    SceneLoader
-} from 'babylonjs'
+import { SceneLoader } from 'babylonjs'
 
 import Squelette from '../Mobs/Squelette'
 

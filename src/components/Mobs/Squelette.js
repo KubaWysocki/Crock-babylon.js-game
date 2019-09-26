@@ -29,34 +29,36 @@ class Squelette {
     }
 
     createBounderAndPhysics( id ) {
-        this.bounder = new MeshBuilder.CreateCylinder(
+        const bounder = new MeshBuilder.CreateCylinder(
             'boundingBox' + id, 
             { height: 4.6, diameter: 2 },
             this.scene
         )
-        this.bounder.visibility = 0
-        this.bounder.Squelette = this
-        this.bounder.position.set( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
+        bounder.visibility = 0
+        bounder.Squelette = this
+        bounder.position.set( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
 
         this.physicsImpostor = new PhysicsImpostor(
-            this.bounder,
+            bounder,
             PhysicsImpostor.CylinderImpostor,
             { mass: 1, friction: 1, restitution: 0 },
             this.scene
         )
         this.physicsImpostor.physicsBody.collisionFilterMask = 1
+
+        this.bounder = bounder
     }
 
     configureAnimations( animations ) {
         this.animations = animations
         this.animationDelay = performance.now()
-        this.activeAnimation = null
+        this.activeAnimation = this.animations[1]
 
-        this.animations[2].onAnimationLoopObservable.add(() => {
+        animations[2].onAnimationLoopObservable.add(() => {
             console.log('low attack')
             this.playAnimation( 0 )
         })
-        this.animations[3].onAnimationLoopObservable.add(() => {
+        animations[3].onAnimationLoopObservable.add(() => {
             console.log('high attack')
             this.playAnimation( 0 )
         })
@@ -65,9 +67,9 @@ class Squelette {
     playAnimation( index ) {
         if( this.animations[index] === this.activeAnimation ) return
 
+        this.activeAnimation.stop()
         this.activeAnimation = this.animations[index]
-        this.animations.forEach( a => a.stop() )
-        this.animations[index].play( true )
+        this.activeAnimation.play( true )
     }
 
     move() {

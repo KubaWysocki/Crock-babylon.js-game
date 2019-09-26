@@ -34,11 +34,9 @@ function Game () {
 
     modelLoader( scene ).then(() => {
         engine.runRenderLoop(() => {
-            scene.squelettes.forEach( squelette => squelette.Squelette.move())
+            scene.squelettes.forEach( squelette => squelette.Squelette.move() )
 
-            player.move( controls )
-            player.fireFireballs( controls.isBPressed )
-            player.fireLaser( controls.isFPressed )
+            player.behavior( controls )
 
             scene.render()
         })
