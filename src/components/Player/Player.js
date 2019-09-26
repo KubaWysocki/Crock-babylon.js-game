@@ -45,14 +45,16 @@ class Player extends UniversalCamera {
             this.scene
         )
         
+        this.health = 20
         this.speed = .15
         this.speedLock
+        this.canJump = true
         this.canFireFireballs = true
-        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
         this.canFireLaser = true
+        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
     }
 
-    move({ isWPressed, isSPressed, isAPressed, isDPressed }) {
+    move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
 
         let frontVector = this.getFrontPosition(1).subtract( this.position )
@@ -68,6 +70,16 @@ class Player extends UniversalCamera {
         if( isSPressed ) this.bounder.moveWithCollisions( applySpeed( backVector ))
         if( isAPressed ) this.bounder.moveWithCollisions( applySpeed( leftVector ))
         if( isDPressed ) this.bounder.moveWithCollisions( applySpeed( rightVector ))
+
+        if( isSpacePressed && this.canJump ) {
+            const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.1 )
+            let pickInfo = this.scene.pickWithRay( ray )
+            if( pickInfo.pickedMesh ){
+                this.bounder.physicsImpostor.applyImpulse( new Vector3(0,8,0), this.bounder.position )
+                this.canJump = false
+                setTimeout(() => this.canJump = true, 600)
+            }
+        }
 
         this.position = new Vector3().copyFrom( this.bounder.position )
         this.position.y +=2

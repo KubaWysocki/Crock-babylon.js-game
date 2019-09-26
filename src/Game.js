@@ -2,7 +2,6 @@ import {
     Engine,
     Scene,
     CannonJSPlugin,
-    Vector3,
 } from 'babylonjs'
 
 import * as cannon from 'cannon'
