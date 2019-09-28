@@ -14,11 +14,13 @@ import {
 } from 'babylonjs'
 
 import { FireMaterial } from 'babylonjs-materials'
-
 import fire from '../../img/fire.jpeg'
-import createFireParticles from '../Effects/createFireParticles'
 
 import fireballSound from '../../audio/fireball.wav'
+
+import createBounder from '../Effects/createBounder'
+import createPhysics from '../Effects/createPhysics'
+import createFireParticles from '../Effects/createFireParticles'
 
 class Player extends UniversalCamera {
     constructor( canvas, scene, name = 'player', position = new Vector3( -10, 14, -10 )) {
@@ -29,10 +31,13 @@ class Player extends UniversalCamera {
         this.angularSensibility = 5000
         
         this.scene = scene
-        
-        this.createBounderAndPhysics()
 
-        this.fireballSound = new Sound('fireballSound', fireballSound, this.scene )
+        this.bounder = createBounder( 'player', { position }, scene )
+
+        this.physicsImpostor = createPhysics( 'player', this.bounder, scene )
+
+        this.fireballSound = new Sound('fireballSound', fireballSound, scene )
+        this.bloodFrame = document.getElementById('bloodFrame')
         
         this.health = 20
         this.speed = .15
@@ -40,32 +45,18 @@ class Player extends UniversalCamera {
         this.canJump = true
         this.canFireFireballs = true
         this.canFireLaser = true
-    }
-
-    createBounderAndPhysics() {
-        const bounder = MeshBuilder.CreateCylinder(
-            'playerBounder',
-            { height: 4, diameter: 2 },
-            this.scene
-        )
-        bounder.isVisible = false
-        bounder.position = new Vector3().copyFrom( this.position )
-        bounder.position.y -= 2
-
-        this.physicsImpostor = new PhysicsImpostor(
-            bounder,
-            PhysicsImpostor.CylinderImpostor,
-            { mass: 1, friction: 1, restitution: 0 },
-            this.scene
-        )
-
-        this.bounder = bounder
+        this.died = false
     }
 
     behavior({ isBPressed, isFPressed, ...moveControls }) {
-        this.move( moveControls )
-        this.fireFireballs( isBPressed )
-        this.fireLaser( isFPressed )
+        if( !this.died ) {
+            this.move( moveControls )
+            this.fireFireballs( isBPressed )
+            this.fireLaser( isFPressed )
+        }
+        else {
+            this.detachControl()
+        }
     }
     
     move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
@@ -89,7 +80,7 @@ class Player extends UniversalCamera {
             const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.1 )
             let pickInfo = this.scene.pickWithRay( ray )
             if( pickInfo.pickedMesh ){
-                this.physicsImpostor.applyImpulse( new Vector3(0,8,0), this.bounder.position )
+                this.physicsImpostor.applyImpulse( new Vector3(0,80,0), this.bounder.position )
                 this.canJump = false
                 setTimeout(() => this.canJump = true, 600)
             }
@@ -112,7 +103,7 @@ class Player extends UniversalCamera {
             fireball.material = new FireMaterial( 'fireballMaterial', this.scene )
             fireball.material.diffuseTexture = new Texture( fire, this.scene )
 
-        createFireParticles( fireball, null, true, this.scene )
+        createFireParticles( null, fireball, true, this.scene )
 
         let backPosition = this.getFrontPosition(-3)
         const missingShots = () => Math.random()*4 -2
@@ -165,11 +156,26 @@ class Player extends UniversalCamera {
 
         let pickInfo = this.scene.pickWithRay( ray )
         if( pickInfo.pickedMesh ){
-            if( pickInfo.pickedMesh.name.startsWith('boundingBox') ){
+            if( pickInfo.pickedMesh.name.startsWith('squeletteBounder') ){
                 pickInfo.pickedMesh.Squelette.death()
             }
         }
         setTimeout(() => rayHelper.hide(), 200)
+    }
+
+    getDamage( dmg ) {
+        this.health -= dmg
+        console.log(this.health)
+        let opacityNumber = Number( this.bloodFrame.style.opacity )
+        this.bloodFrame.style.opacity = opacityNumber + dmg / this.health
+        setTimeout(() => this.bloodFrame.style.opacity = (opacityNumber - dmg / this.health), 700)
+
+        if( this.health <= 0 && !this.died ) {
+            this.died = true
+            bloodFrame.style.opacity = 1
+            createFireParticles( 'playerDeath', this.bounder, true, this.scene )
+            document.getElementById('died').style.opacity = 1
+        }
     }
 }
 export default Player

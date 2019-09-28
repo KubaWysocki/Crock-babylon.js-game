@@ -5,6 +5,8 @@ import {
     PhysicsImpostor
 } from 'babylonjs'
 
+import createBounder from '../Effects/createBounder'
+import createPhysics from '../Effects/createPhysics'
 import createFireParticles from '../Effects/createFireParticles'
 
 class Squelette {
@@ -18,35 +20,20 @@ class Squelette {
         this.squeletteMeshes[0].scaling = new Vector3( .025, .025, .025 )
 
         this.skeletons = squelette.skeletons
-      
-        this.createBounderAndPhysics( id )
+
         this.configureAnimations( squelette.animationGroups )
+      
+        this.bounder = createBounder( 'squelette', { id }, scene )
+        this.bounder.Squelette = this
 
-        this.fireParticles = createFireParticles( this.bounder, 'squelette', false, this.scene )
+        this.physicsImpostor = createPhysics( 'squelette', this.bounder, scene )
 
+        this.fireParticles = createFireParticles( 'squelette', this.bounder, false, scene )
+
+        this.distance
         this.health = 10
         this.speed = .15
-    }
-
-    createBounderAndPhysics( id ) {
-        const bounder = new MeshBuilder.CreateCylinder(
-            'boundingBox' + id, 
-            { height: 4.6, diameter: 2 },
-            this.scene
-        )
-        bounder.visibility = 0
-        bounder.Squelette = this
-        bounder.position.set( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
-
-        this.physicsImpostor = new PhysicsImpostor(
-            bounder,
-            PhysicsImpostor.CylinderImpostor,
-            { mass: 1, friction: 1, restitution: 0 },
-            this.scene
-        )
-        this.physicsImpostor.physicsBody.collisionFilterMask = 1
-
-        this.bounder = bounder
+        this.isAttacking = false
     }
 
     configureAnimations( animations ) {
@@ -55,12 +42,14 @@ class Squelette {
         this.activeAnimation = this.animations[1]
 
         animations[2].onAnimationLoopObservable.add(() => {
-            console.log('low attack')
             this.playAnimation( 0 )
+            this.isAttacking = false 
+            if( this.distance < 10 ) this.player.getDamage( 1 )
         })
         animations[3].onAnimationLoopObservable.add(() => {
-            console.log('high attack')
             this.playAnimation( 0 )
+            this.isAttacking = false 
+            if( this.distance < 15 ) this.player.getDamage( 2 )
         })
     }
 
@@ -74,8 +63,11 @@ class Squelette {
 
     move() {
         let direction = this.player.position.subtract( this.bounder.position )
-        let distance = direction.length()
-            direction.y = 0
+        this.distance = direction.length()
+        
+        if( this.isAttacking ) return
+
+        direction.y = 0
         let dir = direction.normalize()
 
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0)
@@ -84,18 +76,21 @@ class Squelette {
         let currentTime = performance.now()
         let canAttack =  currentTime - this.animationDelay > 1800
         
-        if( distance > 30 ) {
+        if( this.distance > 30 ) {
             this.playAnimation( 0 )
         }
-        else if( distance > 5 ) {
+        else if( this.distance > 5 ) {
             this.bounder.moveWithCollisions( dir.multiplyByFloats( this.speed, this.speed, this.speed ) )
             this.playAnimation( 4 )
         }
         else if( canAttack ) {
             if( Math.random() >= .3 ) this.playAnimation( 2 )
             else this.playAnimation( 3 )
+
+            this.isAttacking = true
             this.animationDelay = currentTime
         }
+
         this.squeletteMeshes[0].position = new Vector3().copyFrom( this.bounder.position )
         this.squeletteMeshes[0].position.y -= 2.3
     }
@@ -109,8 +104,8 @@ class Squelette {
                 hitPoints++    
                 if( this.health < 0 ) {
                     const deadParticles = createFireParticles( 
-                        new Vector3().copyFrom( this.bounder.position ), 
                         'killSquelette',
+                        new Vector3().copyFrom( this.bounder.position ), 
                         true,
                         this.scene 
                     )

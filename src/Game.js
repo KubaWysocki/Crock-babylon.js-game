@@ -2,6 +2,7 @@ import {
     Engine,
     Scene,
     CannonJSPlugin,
+    PhysicsViewer
 } from 'babylonjs'
 
 import * as cannon from 'cannon'
@@ -23,7 +24,7 @@ function Game () {
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
-    scene.enablePhysics( null, new CannonJSPlugin( true, 10, cannon ))
+    scene.enablePhysics( null, new CannonJSPlugin( true, 1, cannon ))
 
     createLight( scene )
     createGround( scene )
@@ -40,6 +41,10 @@ function Game () {
 
             scene.render()
         })
+    })
+    .then(() => {
+        const physicsViewer = new PhysicsViewer( scene )
+        scene.squelettes.forEach( mesh => physicsViewer.showImpostor(mesh.Squelette.physicsImpostor, mesh.bounder) )
     })
 }
 export default Game
