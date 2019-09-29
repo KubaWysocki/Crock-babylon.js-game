@@ -34,13 +34,13 @@ function Game () {
 
 
     modelLoader( scene ).then(() => {
-        engine.runRenderLoop(() => {
+        scene.registerBeforeRender(() => {
             scene.squelettes.forEach( squelette => squelette.Squelette.move() )
 
             player.behavior( controls )
 
-            scene.render()
         })
+        engine.runRenderLoop(() => scene.render() )
     })
     .then(() => {
         const physicsViewer = new PhysicsViewer( scene )

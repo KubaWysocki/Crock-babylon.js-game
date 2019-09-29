@@ -28,7 +28,7 @@ const createFireParticles = ( type, emitter, startOnCreate, scene ) => {
             fireParticles.maxEmitBox = new Vector3(2, 2.5, 2)
             fireParticles.emitRate = 100000
             break
-        default: 
+        case 'fireball': 
             fireParticles.minEmitBox = new Vector3(-.5, -.5, -.5)
             fireParticles.maxEmitBox = new Vector3(.5, .5, .5)
     }

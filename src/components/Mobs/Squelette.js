@@ -62,19 +62,20 @@ class Squelette {
     }
 
     move() {
-        let direction = this.player.position.subtract( this.bounder.position )
+        const direction = this.player.position.subtract( this.bounder.position )
         this.distance = direction.length()
         
         if( this.isAttacking ) return
 
         direction.y = 0
-        let dir = direction.normalize()
+        const dir = direction.normalize()
+        const flatDistance = direction.length()
 
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0)
         this.squeletteMeshes[0].rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), Math.atan2( dir.x, dir.z ))
         
-        let currentTime = performance.now()
-        let canAttack =  currentTime - this.animationDelay > 1800
+        const currentTime = performance.now()
+        const canAttack =  currentTime - this.animationDelay > 1800
         
         if( this.distance > 30 ) {
             this.playAnimation( 0 )
@@ -83,14 +84,18 @@ class Squelette {
             this.bounder.moveWithCollisions( dir.multiplyByFloats( this.speed, this.speed, this.speed ) )
             this.playAnimation( 4 )
         }
-        else if( canAttack ) {
-            if( Math.random() >= .3 ) this.playAnimation( 2 )
-            else this.playAnimation( 3 )
-
-            this.isAttacking = true
-            this.animationDelay = currentTime
+        else {
+            if( canAttack ){
+                if( Math.random() >= .3 ) this.playAnimation( 2 )
+                else this.playAnimation( 3 )
+                this.isAttacking = true
+                this.animationDelay = currentTime
+            }
+            else if( flatDistance < 5 ) {
+                this.bounder.moveWithCollisions( dir.negate().multiplyByFloats( this.speed, this.speed, this.speed ) )
+                this.playAnimation( 4 )
+            }
         }
-
         this.squeletteMeshes[0].position = new Vector3().copyFrom( this.bounder.position )
         this.squeletteMeshes[0].position.y -= 2.3
     }

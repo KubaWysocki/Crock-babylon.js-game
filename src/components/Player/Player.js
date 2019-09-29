@@ -2,7 +2,6 @@ import {
     Vector3,
     UniversalCamera,
     MeshBuilder,
-    PhysicsImpostor,
     ActionManager,
     ExecuteCodeAction,
     Texture,
@@ -41,10 +40,10 @@ class Player extends UniversalCamera {
         
         this.health = 20
         this.speed = .15
-        this.speedLock
-        this.canJump = true
-        this.canFireFireballs = true
-        this.canFireLaser = true
+        this.isInAir = false
+        this.fireFireballLock = 0
+        this.previousPosition = this.position
+        this.fireLaserLock = 0
         this.died = false
     }
 
@@ -61,12 +60,27 @@ class Player extends UniversalCamera {
     
     move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
         this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
+        
+        const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.2 )
+        const pickInfo = this.scene.pickWithRay( ray )
 
-        let frontVector = this.getFrontPosition(1).subtract( this.position )
+        this.position = new Vector3().copyFrom( this.bounder.position )
+        this.position.y +=2
+
+        if( !pickInfo.pickedMesh ) {
+            this.isInAir = true
+            return
+        }
+        else if( this.isInAir ) {
+            this.physicsImpostor.setLinearVelocity( new Vector3(0,0,0) )
+            this.isInAir = false
+        }
+        
+        const frontVector = this.getFrontPosition(1).subtract( this.position )
             frontVector.y = 0
-        let backVector = frontVector.negate()
-        let leftVector = backVector.rotateByQuaternionToRef( new Quaternion.RotationAxis( new Vector3.Up(), Math.PI / 2 ), new Vector3 )
-        let rightVector = leftVector.negate()
+        const backVector = frontVector.negate()
+        const leftVector = backVector.rotateByQuaternionToRef( new Quaternion.RotationAxis( new Vector3.Up(), Math.PI / 2 ), new Vector3 )
+        const rightVector = leftVector.negate()
 
         const applySpeed = ( vector, multiplier = 1 ) => 
             vector.multiplyByFloats( this.speed * multiplier, this.speed * multiplier, this.speed * multiplier )
@@ -76,34 +90,30 @@ class Player extends UniversalCamera {
         if( isAPressed ) this.bounder.moveWithCollisions( applySpeed( leftVector ))
         if( isDPressed ) this.bounder.moveWithCollisions( applySpeed( rightVector ))
 
-        if( isSpacePressed && this.canJump ) {
-            const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.1 )
-            let pickInfo = this.scene.pickWithRay( ray )
-            if( pickInfo.pickedMesh ){
-                this.physicsImpostor.applyImpulse( new Vector3(0,80,0), this.bounder.position )
-                this.canJump = false
-                setTimeout(() => this.canJump = true, 600)
-            }
-        }
+        let jumpVector = this.position.subtract( this.previousPosition )
+        this.previousPosition = this.position
 
-        this.position = new Vector3().copyFrom( this.bounder.position )
-        this.position.y +=2
+        if( isSpacePressed ) {
+            jumpVector = applySpeed( jumpVector, 800 )
+            jumpVector.y = 25
+            this.physicsImpostor.applyImpulse( jumpVector , this.bounder.position )
+        }
     }
 
     fireFireballs( isBPressed ) {
-        if( !isBPressed || !this.canFireFireballs ) return
-        this.canFireFireballs = false
-        this.speed = .05
-        this.speedLock = performance.now()
+        const canFireFireball = performance.now() - this.fireFireballLock > 1000
+        if( !isBPressed || !canFireFireball ) return
         
-        setTimeout(() => this.canFireFireballs = true, 1000)
-        setTimeout(() => performance.now() - this.speedLock >= 1500 ? this.speed = .15 : null, 1500 )
+        this.fireFireballLock = performance.now()
+        this.speed = .075
+        
+        setTimeout(() => performance.now() - this.fireFireballLock >= 1500 ? this.speed = .15 : null, 1500 )
         
         const fireball = new MeshBuilder.CreateSphere( 'fireball', { segments: 16, diameter: 1 }, this.scene )
             fireball.material = new FireMaterial( 'fireballMaterial', this.scene )
             fireball.material.diffuseTexture = new Texture( fire, this.scene )
 
-        createFireParticles( null, fireball, true, this.scene )
+        createFireParticles( 'fireball', fireball, true, this.scene )
 
         let backPosition = this.getFrontPosition(-3)
         const missingShots = () => Math.random()*4 -2
@@ -111,13 +121,8 @@ class Player extends UniversalCamera {
         let forceVector = this.getFrontPosition(15).subtract( fireball.position )
             forceVector.y += 5
 
-        fireball.physicsImpostor = new PhysicsImpostor(
-            fireball,
-            PhysicsImpostor.SphereImpostor,
-            { mass: 1 },
-            this.scene
-        )
-        fireball.physicsImpostor.physicsBody.collisionFilterMask = 2
+        fireball.physicsImpostor = createPhysics( 'fireball', fireball, this.scene )
+
         fireball.physicsImpostor.applyImpulse(
             forceVector,
             fireball.position
@@ -140,10 +145,10 @@ class Player extends UniversalCamera {
     }
 
     fireLaser( isFPressed ) {
-        if( !isFPressed || !this.canFireLaser ) return
+        const canFireLaser = performance.now() - this.fireLaserLock > 1000
+        if( !isFPressed || !canFireLaser ) return
 
-        this.canFireLaser = false
-        setTimeout(() => this.canFireLaser = true, 500)
+        this.fireLaserLock = performance.now()
 
         let direction = this.getFrontPosition(10).subtract( this.position )
             direction.y = 0
