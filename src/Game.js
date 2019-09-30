@@ -6,7 +6,6 @@ import {
 } from 'babylonjs'
 
 import * as cannon from 'cannon'
-import 'babylonjs-loaders'
 
 import Player from './components/Player/Player'
 import UserControls from './components/Player/UserControls'
@@ -24,7 +23,7 @@ function Game () {
     window.addEventListener( 'resize', () => engine.resize() )
 
     const scene = new Scene( engine )
-    scene.enablePhysics( null, new CannonJSPlugin( true, 1, cannon ))
+    scene.enablePhysics( null, new CannonJSPlugin( true, 100, cannon ))
 
     createLight( scene )
     createGround( scene )
@@ -42,9 +41,9 @@ function Game () {
         })
         engine.runRenderLoop(() => scene.render() )
     })
-    .then(() => {
-        const physicsViewer = new PhysicsViewer( scene )
-        scene.squelettes.forEach( mesh => physicsViewer.showImpostor(mesh.Squelette.physicsImpostor, mesh.bounder) )
-    })
+    // .then(() => {
+    //     const physicsViewer = new PhysicsViewer( scene )
+    //     scene.squelettes.forEach( mesh => physicsViewer.showImpostor(mesh.Squelette.physicsImpostor, mesh.bounder) )
+    // })
 }
 export default Game

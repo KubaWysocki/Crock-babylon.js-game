@@ -1,8 +1,6 @@
 import {
     Vector3,
-    MeshBuilder,
     Quaternion,
-    PhysicsImpostor
 } from 'babylonjs'
 
 import createBounder from '../Effects/createBounder'
@@ -91,10 +89,11 @@ class Squelette {
                 this.isAttacking = true
                 this.animationDelay = currentTime
             }
-            else if( flatDistance < 5 ) {
+            else if( flatDistance < 4 ) {
                 this.bounder.moveWithCollisions( dir.negate().multiplyByFloats( this.speed, this.speed, this.speed ) )
                 this.playAnimation( 4 )
             }
+            else this.playAnimation( 0 )
         }
         this.squeletteMeshes[0].position = new Vector3().copyFrom( this.bounder.position )
         this.squeletteMeshes[0].position.y -= 2.3

@@ -9,7 +9,7 @@ import {
     RayHelper,
     Color3,
     Sound,
-    Quaternion,
+    Quaternion
 } from 'babylonjs'
 
 import { FireMaterial } from 'babylonjs-materials'
@@ -40,6 +40,7 @@ class Player extends UniversalCamera {
         
         this.health = 20
         this.speed = .15
+        this.isOnRamp = false
         this.isInAir = false
         this.fireFireballLock = 0
         this.previousPosition = this.position
@@ -59,21 +60,29 @@ class Player extends UniversalCamera {
     }
     
     move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
-        this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
         
-        const ray = new Ray( this.bounder.position, new Vector3.Down(), 2.2 )
-        const pickInfo = this.scene.pickWithRay( ray )
-
+        this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
         this.position = new Vector3().copyFrom( this.bounder.position )
         this.position.y +=2
+        
+        const applySpeed = ( vector, multiplier = 1 ) => 
+            vector.multiplyByFloats( this.speed * multiplier, this.speed * multiplier, this.speed * multiplier )
 
-        if( !pickInfo.pickedMesh ) {
+        const rampRay = new Ray( this.bounder.position, new Vector3.Down(), 5 ).intersectsMeshes( this.scene.ramps )
+
+        if( rampRay[0] ) this.isOnRamp = true
+        else this.isOnRamp = false
+        
+        const jumpingRay = new Ray( this.bounder.position, new Vector3.Down(), 2.05 )
+        const isInAirInfo = this.scene.pickWithRay( jumpingRay )
+
+        if( !isInAirInfo.pickedMesh && !this.isOnRamp ) {
             this.isInAir = true
             return
         }
         else if( this.isInAir ) {
-            this.physicsImpostor.setLinearVelocity( new Vector3(0,0,0) )
-            this.isInAir = false
+            this.physicsImpostor.setLinearVelocity( new Vector3.Zero() )
+            setTimeout(() => this.isInAir = false, 500)
         }
         
         const frontVector = this.getFrontPosition(1).subtract( this.position )
@@ -82,20 +91,17 @@ class Player extends UniversalCamera {
         const leftVector = backVector.rotateByQuaternionToRef( new Quaternion.RotationAxis( new Vector3.Up(), Math.PI / 2 ), new Vector3 )
         const rightVector = leftVector.negate()
 
-        const applySpeed = ( vector, multiplier = 1 ) => 
-            vector.multiplyByFloats( this.speed * multiplier, this.speed * multiplier, this.speed * multiplier )
-
         if( isWPressed ) this.bounder.moveWithCollisions( applySpeed( frontVector, 1.2 ))
         if( isSPressed ) this.bounder.moveWithCollisions( applySpeed( backVector ))
         if( isAPressed ) this.bounder.moveWithCollisions( applySpeed( leftVector ))
         if( isDPressed ) this.bounder.moveWithCollisions( applySpeed( rightVector ))
 
-        let jumpVector = this.position.subtract( this.previousPosition )
+        let jumpVector = this.position.subtract( this.previousPosition ).normalize()
         this.previousPosition = this.position
 
-        if( isSpacePressed ) {
-            jumpVector = applySpeed( jumpVector, 800 )
-            jumpVector.y = 25
+        if( isSpacePressed && !this.isInAir && !this.isOnRamp ) {
+            jumpVector = applySpeed( jumpVector, 1000 )
+            jumpVector.y = 80
             this.physicsImpostor.applyImpulse( jumpVector , this.bounder.position )
         }
     }
@@ -172,8 +178,8 @@ class Player extends UniversalCamera {
         this.health -= dmg
         console.log(this.health)
         let opacityNumber = Number( this.bloodFrame.style.opacity )
-        this.bloodFrame.style.opacity = opacityNumber + dmg / this.health
-        setTimeout(() => this.bloodFrame.style.opacity = (opacityNumber - dmg / this.health), 700)
+        this.bloodFrame.style.opacity = opacityNumber + (dmg / this.health)
+        setTimeout(() => this.bloodFrame.style.opacity = (opacityNumber - (dmg / this.health)), 700)
 
         if( this.health <= 0 && !this.died ) {
             this.died = true

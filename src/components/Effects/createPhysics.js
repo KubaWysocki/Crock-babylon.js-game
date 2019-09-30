@@ -26,13 +26,15 @@ function createPhysics ( type, mesh, scene ) {
             options.restitution = 0
 
             physicsImpostor = new PhysicsImpostor( mesh, PhysicsImpostor.BoxImpostor, options, scene )
-            physicsImpostor.physicsBody.collisionFilterGroup = -1
+            if(physicsImpostor.physicsBody) //this if somehow makes it work properly 
+                physicsImpostor.physicsBody.collisionFilterGroup = -1
             break
         case 'fireball':
             options.mass = 1
 
             physicsImpostor = new PhysicsImpostor( mesh, PhysicsImpostor.SphereImpostor, options, scene )
-            physicsImpostor.physicsBody.collisionFilterGroup = 2
+            physicsImpostor.physicsBody.collisionFilterMask = 2
+            break
     }
     return physicsImpostor
 }

@@ -1,5 +1,7 @@
 import { SceneLoader } from 'babylonjs'
 
+import 'babylonjs-loaders'
+
 import Squelette from '../Mobs/Squelette'
 
 const modelLoader = ( scene ) => {
