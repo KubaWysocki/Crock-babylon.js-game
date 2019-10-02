@@ -1,6 +1,6 @@
 import { 
-    Vector3,
     UniversalCamera,
+    Vector3,
     MeshBuilder,
     ActionManager,
     ExecuteCodeAction,
@@ -9,7 +9,8 @@ import {
     RayHelper,
     Color3,
     Sound,
-    Quaternion
+    Quaternion,
+    Animation
 } from 'babylonjs'
 
 import { FireMaterial } from 'babylonjs-materials'
@@ -22,10 +23,11 @@ import createPhysics from '../Effects/createPhysics'
 import createFireParticles from '../Effects/createFireParticles'
 
 class Player extends UniversalCamera {
-    constructor( canvas, scene, name = 'player', position = new Vector3( -10, 14, -10 )) {
+    constructor( canvas, scene, sword, name = 'player', position = new Vector3( -10, 14, -10 )) {
         super( name, position, scene )
-        
+
         this.attachControl( canvas )
+        this.canvas = canvas
         this.ellipsoid = new Vector3(.1, .1, .1)
         this.angularSensibility = 5000
         
@@ -35,8 +37,9 @@ class Player extends UniversalCamera {
 
         this.physicsImpostor = createPhysics( 'player', this.bounder, scene )
 
+        this.createSword( sword )
+
         this.fireballSound = new Sound('fireballSound', fireballSound, scene )
-        this.bloodFrame = document.getElementById('bloodFrame')
         
         this.health = 20
         this.speed = .15
@@ -47,26 +50,56 @@ class Player extends UniversalCamera {
         this.fireLaserLock = 0
         this.died = false
     }
+    
+    createSword( sword ) {
+        const swordMesh = sword.meshes[0]
+        swordMesh.parent = this.bounder
+        swordMesh.scaling = new Vector3( .02, .02, .02 )
+        swordMesh.position.set( 1, 2.5, 1.5 )
+        swordMesh.rotationQuaternion = new Quaternion.FromEulerAngles( Math.PI/9, Math.PI/2, Math.PI )
 
-    behavior({ isBPressed, isFPressed, ...moveControls }) {
+        swordMesh.animations[0] = new Animation( '', 'rotation', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE )
+        swordMesh.animations[0].setKeys([
+            { frame: 0, value: new Vector3( Math.PI / 9,      Math.PI / 2,  Math.PI ) },
+            { frame: 20, value: new Vector3( 0,     Math.PI / 2,  2 * Math.PI / 1.4 ) },
+            { frame: 60, value: new Vector3( Math.PI / 9,     Math.PI / 2,  Math.PI ) }
+        ])
+
+        swordMesh.animations[1] = new Animation( '', 'position', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE )
+        swordMesh.animations[1].setKeys([
+            { frame: 0, value: swordMesh.position },
+            { frame: 20, value: new Vector3( .5, 2, 2.5 ) },
+            { frame: 60, value: swordMesh.position }
+        ])
+
+        this.sword = sword
+    }
+
+    behavior({ isBPressed, isFPressed, isLeftMouseClicked, ...moveControls }) {
         if( !this.died ) {
             this.move( moveControls )
             this.fireFireballs( isBPressed )
             this.fireLaser( isFPressed )
+            this.swordAttack( isLeftMouseClicked )
         }
-        else {
-            this.detachControl()
-        }
+        else this.detachControl( this.canvas )
+    }
+
+    swordAttack( isLeftMouseClicked ) {
+        if( isLeftMouseClicked ) this.scene.beginAnimation( this.sword.meshes[0], 0, 60 )
     }
     
     move({ isWPressed, isSPressed, isAPressed, isDPressed, isSpacePressed }) {
-        
-        this.bounder.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Up(), 0 )
-        this.position = new Vector3().copyFrom( this.bounder.position )
-        this.position.y +=2
-        
+
+        this.bounder.rotationQuaternion = new Quaternion.FromEulerAngles( 0, this.rotation.y, 0 )
+
         const applySpeed = ( vector, multiplier = 1 ) => 
             vector.multiplyByFloats( this.speed * multiplier, this.speed * multiplier, this.speed * multiplier )
+        
+        const adjustPosition = () => {
+            this.position = new Vector3().copyFrom( this.bounder.position )
+            this.position.y +=2
+        }
 
         const rampRay = new Ray( this.bounder.position, new Vector3.Down(), 5 ).intersectsMeshes( this.scene.ramps )
 
@@ -76,15 +109,19 @@ class Player extends UniversalCamera {
         const jumpingRay = new Ray( this.bounder.position, new Vector3.Down(), 2.05 )
         const isInAirInfo = this.scene.pickWithRay( jumpingRay )
 
+        let jumpVector = this.position.subtract( this.previousPosition ).normalize()
+        this.previousPosition = this.position
+        
         if( !isInAirInfo.pickedMesh && !this.isOnRamp ) {
             this.isInAir = true
+            adjustPosition()
             return
         }
         else if( this.isInAir ) {
             this.physicsImpostor.setLinearVelocity( new Vector3.Zero() )
             setTimeout(() => this.isInAir = false, 500)
         }
-        
+
         const frontVector = this.getFrontPosition(1).subtract( this.position )
             frontVector.y = 0
         const backVector = frontVector.negate()
@@ -96,14 +133,12 @@ class Player extends UniversalCamera {
         if( isAPressed ) this.bounder.moveWithCollisions( applySpeed( leftVector ))
         if( isDPressed ) this.bounder.moveWithCollisions( applySpeed( rightVector ))
 
-        let jumpVector = this.position.subtract( this.previousPosition ).normalize()
-        this.previousPosition = this.position
-
         if( isSpacePressed && !this.isInAir && !this.isOnRamp ) {
-            jumpVector = applySpeed( jumpVector, 1000 )
-            jumpVector.y = 80
+            jumpVector = applySpeed( jumpVector, 900 )
+            jumpVector.y = 60
             this.physicsImpostor.applyImpulse( jumpVector , this.bounder.position )
         }
+        adjustPosition()
     }
 
     fireFireballs( isBPressed ) {
@@ -156,16 +191,16 @@ class Player extends UniversalCamera {
 
         this.fireLaserLock = performance.now()
 
-        let direction = this.getFrontPosition(10).subtract( this.position )
+        const direction = this.getFrontPosition(10).subtract( this.position )
             direction.y = 0
-        let origin = new Vector3().copyFrom( this.position )
+        const origin = new Vector3().copyFrom( this.position )
             origin.y -= .5
 
         const ray = new Ray( origin, direction, 100 )
         const rayHelper = new RayHelper( ray )
         rayHelper.show( this.scene, new Color3.Red )
 
-        let pickInfo = this.scene.pickWithRay( ray )
+        const pickInfo = this.scene.pickWithRay( ray )
         if( pickInfo.pickedMesh ){
             if( pickInfo.pickedMesh.name.startsWith('squeletteBounder') ){
                 pickInfo.pickedMesh.Squelette.death()
@@ -177,13 +212,9 @@ class Player extends UniversalCamera {
     getDamage( dmg ) {
         this.health -= dmg
         console.log(this.health)
-        let opacityNumber = Number( this.bloodFrame.style.opacity )
-        this.bloodFrame.style.opacity = opacityNumber + (dmg / this.health)
-        setTimeout(() => this.bloodFrame.style.opacity = (opacityNumber - (dmg / this.health)), 700)
 
         if( this.health <= 0 && !this.died ) {
             this.died = true
-            bloodFrame.style.opacity = 1
             createFireParticles( 'playerDeath', this.bounder, true, this.scene )
             document.getElementById('died').style.opacity = 1
         }

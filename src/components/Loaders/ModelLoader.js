@@ -19,6 +19,15 @@ const modelLoader = ( scene ) => {
             .catch( err => console.log(err) )
         
     const skeletons = new Array(5).fill().map( importSqueletteAsync )
-    return Promise.all( skeletons )
+
+    const importSwordAsync = () => 
+        SceneLoader.ImportMeshAsync( "", "./src/models/worn_sword/", "scene.gltf", scene )
+            .then( result => {
+                scene.sword = result
+                return result
+            })
+            .catch( err => console.log(err) )
+
+    return Promise.all([ ...skeletons, importSwordAsync() ])
 }
 export default modelLoader

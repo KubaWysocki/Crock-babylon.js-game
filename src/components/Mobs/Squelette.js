@@ -10,9 +10,8 @@ import createFireParticles from '../Effects/createFireParticles'
 class Squelette {
     constructor( squelette, scene, id ) {
         squelette.Squelette = this
-        
+
         this.scene = scene
-        this.player = this.scene.getCameraByName('player')
         
         this.squeletteMeshes = squelette.meshes
         this.squeletteMeshes[0].scaling = new Vector3( .025, .025, .025 )
@@ -60,6 +59,9 @@ class Squelette {
     }
 
     move() {
+        //move to constructor
+        if( !this.player ) this.player = this.scene.getCameraByName('player')
+
         const direction = this.player.position.subtract( this.bounder.position )
         this.distance = direction.length()
         

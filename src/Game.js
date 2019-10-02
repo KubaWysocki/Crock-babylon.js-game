@@ -28,16 +28,14 @@ function Game () {
     createLight( scene )
     createGround( scene )
 
-    const player = new Player( canvas, scene )
     const controls = new UserControls()
-
-
-    modelLoader( scene ).then(() => {
+    
+    modelLoader( scene ).then((res) => {
+        const player = new Player( canvas, scene, res[5] )
         scene.registerBeforeRender(() => {
             scene.squelettes.forEach( squelette => squelette.Squelette.move() )
 
             player.behavior( controls )
-
         })
         engine.runRenderLoop(() => scene.render() )
     })

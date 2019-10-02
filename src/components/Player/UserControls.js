@@ -7,6 +7,7 @@ class UserControls {
         this.isBPressed = false
         this.isFPressed = false
         this.isSpacePressed = false
+        this.isLeftMouseClicked = false
 
         window.addEventListener( 'keydown', e => {
             switch( e.keyCode ){
@@ -30,6 +31,8 @@ class UserControls {
                 case 32: this.isSpacePressed = false; break
             }
         })
+        window.addEventListener( 'mousedown', () => this.isLeftMouseClicked = true )
+        window.addEventListener( 'mouseup', () => this.isLeftMouseClicked = false )
     }
 }
 export default UserControls

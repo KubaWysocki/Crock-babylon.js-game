@@ -6,7 +6,7 @@ function createPhysics ( type, mesh, scene ) {
 
     switch( type ) {
         case 'player':
-            options.mass = 10
+            options.mass = 20
             options.friction = 1
             options.restitution = 0
 
