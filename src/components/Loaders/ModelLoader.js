@@ -24,7 +24,6 @@ const modelLoader = ( scene ) => {
         SceneLoader.ImportMeshAsync( "", "./src/models/worn_sword/", "scene.gltf", scene )
             .then( result => {
                 scene.sword = result
-                return result
             })
             .catch( err => console.log(err) )
 

@@ -30,8 +30,10 @@ function Game () {
 
     const controls = new UserControls()
     
-    modelLoader( scene ).then((res) => {
-        const player = new Player( canvas, scene, res[5] )
+    modelLoader( scene ).then(() => {
+        
+        const player = new Player( canvas, scene, scene.sword )
+
         scene.registerBeforeRender(() => {
             scene.squelettes.forEach( squelette => squelette.Squelette.move() )
 

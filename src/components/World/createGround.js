@@ -50,5 +50,7 @@ const createGround = ( scene ) => {
         ramp.position.set( 20, 8.5, 40 )
 
     scene.ramps.push( ramp )
+    scene.ramps.push( barier )
+    scene.ramps.push( ndBarier )
 }
 export default createGround
