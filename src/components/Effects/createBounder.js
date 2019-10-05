@@ -10,7 +10,7 @@ function createBounder ( type, { id, position }, scene ) {
 
     switch( type ) {
         case 'player':
-            options.height = 4
+            options.height = 4.5
             options.diameter = 2
 
             bounder = MeshBuilder.CreateCylinder( name, options, scene )
@@ -23,7 +23,7 @@ function createBounder ( type, { id, position }, scene ) {
 
             bounder = MeshBuilder.CreateCylinder( name, options, scene )
             bounder.visibility = 0
-            bounder.position = new Vector3( (Math.random()*200)-100, 5, (Math.random()*200)-100 )
+            bounder.position = new Vector3( Math.random()*200-100, 5, Math.random()*200-100 )
             break
     }
     return bounder

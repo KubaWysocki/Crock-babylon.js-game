@@ -2,9 +2,7 @@ import { SceneLoader } from 'babylonjs'
 
 import 'babylonjs-loaders'
 
-import Squelette from '../Mobs/Squelette'
-
-const modelLoader = ( scene ) => {
+const modelLoader = ( { squelettes: num }, scene ) => {
     SceneLoader.OnPluginActivatedObservable.addOnce( plugin => 
         plugin.name === "gltf" ?  plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE : null )
     
@@ -12,21 +10,17 @@ const modelLoader = ( scene ) => {
 
     const importSqueletteAsync = () => 
         SceneLoader.ImportMeshAsync( "", "./src/models/squelette_lourd/", "scene.gltf", scene )
-            .then( result => {
-                scene.squelettes.push( result )
-                new Squelette( result, scene, scene.squelettes.length )
-            })
+            .then( result => scene.squelettes.push( result ) )
             .catch( err => console.log(err) )
-        
-    const skeletons = new Array(5).fill().map( importSqueletteAsync )
 
     const importSwordAsync = () => 
         SceneLoader.ImportMeshAsync( "", "./src/models/worn_sword/", "scene.gltf", scene )
-            .then( result => {
-                scene.sword = result
-            })
+            .then( result => scene.sword = result )
             .catch( err => console.log(err) )
 
-    return Promise.all([ ...skeletons, importSwordAsync() ])
+    return Promise.all([ 
+        ...new Array( num ).fill().map( importSqueletteAsync ), 
+        importSwordAsync() 
+    ])
 }
 export default modelLoader

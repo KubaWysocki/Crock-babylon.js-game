@@ -15,6 +15,8 @@ import createGround from './components/World/createGround'
 
 import modelLoader from './components/Loaders/modelLoader'
 
+import Squelette from './components/Mobs/Squelette'
+
 function Game () {
     const canvas = document.getElementById('renderCanvas')
     window.addEventListener( 'click', () => canvas.requestPointerLock() )
@@ -29,18 +31,23 @@ function Game () {
     createGround( scene )
 
     const controls = new UserControls()
+
+    const options = { 
+        squelettes: 6
+    }
     
-    modelLoader( scene ).then(() => {
-        
-        const player = new Player( canvas, scene, scene.sword )
+    modelLoader( options, scene )
+        .then(() => {
+            const player = new Player( canvas, scene, scene.sword )
+            scene.squelettes.forEach(( squelette, i ) => new Squelette( squelette, scene, i,  )  )
 
-        scene.registerBeforeRender(() => {
-            scene.squelettes.forEach( squelette => squelette.Squelette.move() )
+            scene.registerBeforeRender(() => {
+                scene.squelettes.forEach( squelette => squelette.Squelette.move() )
 
-            player.behavior( controls )
+                player.behavior( controls )
+            })
+            engine.runRenderLoop(() => scene.render() )
         })
-        engine.runRenderLoop(() => scene.render() )
-    })
     // .then(() => {
     //     const physicsViewer = new PhysicsViewer( scene )
     //     scene.squelettes.forEach( mesh => physicsViewer.showImpostor(mesh.Squelette.physicsImpostor, mesh.bounder) )

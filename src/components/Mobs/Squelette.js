@@ -1,7 +1,7 @@
 import {
     Vector3,
     Quaternion,
-    Ray,
+    Ray
 } from 'babylonjs'
 
 import createBounder from '../Effects/createBounder'
@@ -15,11 +15,10 @@ class Squelette {
         squelette.Squelette = this
 
         this.scene = scene
-        
-        this.squeletteMeshes = squelette.meshes
-        this.squeletteMeshes[0].scaling = new Vector3( .025, .025, .025 )
-        this.squeletteMeshes.forEach( mesh => mesh.isPickable = false )
+        this.player = this.scene.getCameraByName('player')
 
+        this.configureMeshes( squelette.meshes )
+        
         this.skeletons = squelette.skeletons
 
         this.configureAnimations( squelette.animationGroups )
@@ -29,7 +28,7 @@ class Squelette {
 
         this.physicsImpostor = createPhysics( 'squelette', this.bounder, scene )
 
-        this.fireParticles = createFireParticles( 'squelette', this.bounder, false, scene )
+        this.fireParticles = createFireParticles( 'fireSquelette', this.bounder, false, scene )
 
         this.distance
         this.health = 10
@@ -38,6 +37,28 @@ class Squelette {
         this.highAttackDir
         this.takeAWalk = performance.now() + Math.random()*10000
         this.walkDirection = new Vector3( Math.random()-.5, 0, Math.random()-.5 ).normalize()
+    }
+
+    configureMeshes( meshes ) {
+        
+        const aromorNodeIds = {
+            lvl1: [ 13 ,27, 29, 53, 55, 57, 59, 61, 63, 65, 67 ],
+            lvl2: [ 13, 29, 65 ],
+            lvl3: []
+        }
+        
+        const lvl1 = meshes.filter( mesh => 
+            aromorNodeIds.lvl2.some( armorNum => 
+                'node' + armorNum === mesh.id 
+            ) 
+        )
+        lvl1.forEach( mesh => mesh.isVisible = false )
+        
+        meshes[0].scaling = new Vector3( .025, .025, .025 )
+        meshes.forEach( mesh => mesh.isPickable = false )
+
+        this.squeletteMeshes = meshes
+        this.squeletteArmors = []
     }
 
     configureAnimations( animations ) {
@@ -75,9 +96,6 @@ class Squelette {
     }
 
     move() {
-        //move to constructor
-        if( !this.player ) this.player = this.scene.getCameraByName('player')
-
         const direction = this.player.position.subtract( this.bounder.position )
         this.distance = direction.length()
         
@@ -142,7 +160,7 @@ class Squelette {
                 hitPoints++    
                 if( this.health < 0 ) {
                     const deadParticles = createFireParticles( 
-                        'killSquelette',
+                        'fireSqueletteDeath',
                         new Vector3().copyFrom( this.bounder.position ), 
                         true,
                         this.scene 
@@ -165,7 +183,16 @@ class Squelette {
             applySpeed( pushVector, this.speed * 10000 ),
             this.bounder.position
         )
-        if( this.health <= 0 ) this.death()
+        if( this.health <= 0 ) {
+            const deadParticles = createFireParticles( 
+                'meeleSqueletteDeath',
+                new Vector3().copyFrom( this.bounder.position ), 
+                true,
+                this.scene 
+            )
+            setTimeout(() => deadParticles.dispose(), 300)
+            this.death()
+        }
     }
 
     death() {

@@ -36,13 +36,13 @@ const createGround = ( scene ) => {
 
     const barier = MeshBuilder.CreateBox( 'barier', { width: 1, height: 2.3, depth: 50 }, scene )
         ramp.addChild( barier )
-        barier.position.x += 5.5
+        barier.position.x += 4.5
         barier.position.y += 1.1
         barier.material = rampMaterial
         barier.physicsImpostor = createPhysics( 'ground', barier, scene )
 
     const ndBarier = barier.clone( 'barier2', ramp )
-        ndBarier.position.x -= 11
+        ndBarier.position.x -= 9
         ndBarier.physicsImpostor = createPhysics( 'ground', ndBarier, scene )
 
         ramp.physicsImpostor = createPhysics( 'ground', ramp, scene )

@@ -58,7 +58,7 @@ class Player extends UniversalCamera {
         const swordMesh = sword.meshes[0]
         swordMesh.parent = this.bounder
         swordMesh.scaling = new Vector3( .015, .015, .015 )
-        swordMesh.position.set( 1, 2.3, 1.2 )
+        swordMesh.position.set( 1, 1.8, 1.2 )
         swordMesh.rotationQuaternion = new Quaternion.FromEulerAngles( Math.PI/8, Math.PI/2, Math.PI )
 
         swordMesh.animations[0] = new Animation( '', 'rotation', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE )
@@ -70,7 +70,7 @@ class Player extends UniversalCamera {
         swordMesh.animations[1] = new Animation( '', 'position', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE )
         swordMesh.animations[1].setKeys([
             { frame: 0, value: swordMesh.position },
-            { frame: 10, value: new Vector3( .5, 2, 2.5 ) },
+            { frame: 10, value: new Vector3( .3, 1, 2.5 ) },
             { frame: 60, value: swordMesh.position }
         ])
 
@@ -94,7 +94,7 @@ class Player extends UniversalCamera {
 
         const adjustPosition = () => {
             this.position = new Vector3().copyFrom( this.bounder.position )
-            this.position.y += 2
+            this.position.y += 1.5
         }
 
         const rampRayInfo = new Ray( this.bounder.position, new Vector3.Down(), 5 ).intersectsMeshes( this.scene.ramps )
@@ -102,7 +102,7 @@ class Player extends UniversalCamera {
         if( rampRayInfo[0] ) this.isOnRamp = true
         else this.isOnRamp = false
         
-        const jumpingRay = new Ray( this.bounder.position, new Vector3.Down(), 2.05 )
+        const jumpingRay = new Ray( this.bounder.position, new Vector3.Down(), 2.3 )
         const isInAirInfo = this.scene.pickWithRay( jumpingRay )
 
         let jumpVector = this.position.subtract( this.previousPosition ).normalize()
@@ -235,7 +235,7 @@ class Player extends UniversalCamera {
 
         if( this.health <= 0 && !this.died ) {
             this.died = true
-            createFireParticles( 'playerDeath', this.bounder, true, this.scene )
+            createFireParticles( 'playerDeath', new Vector3().copyFrom( this.bounder.position ), true, this.scene )
             document.getElementById('died').style.opacity = 1
         }
     }
