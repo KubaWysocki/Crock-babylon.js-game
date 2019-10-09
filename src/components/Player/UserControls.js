@@ -10,7 +10,7 @@ class UserControls {
         this.isLeftMouseClicked = false
 
         window.addEventListener( 'keydown', e => {
-            switch( e.keyCode ){
+            switch( e.keyCode ) {
                 case 87: this.isWPressed = true; break
                 case 83: this.isSPressed = true; break
                 case 65: this.isAPressed = true; break
@@ -21,7 +21,7 @@ class UserControls {
             }
         })
         window.addEventListener( 'keyup', e => {
-            switch( e.keyCode ){
+            switch( e.keyCode ) {
                 case 87: this.isWPressed = false; break
                 case 83: this.isSPressed = false; break
                 case 65: this.isAPressed = false; break

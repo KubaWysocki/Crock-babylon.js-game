@@ -5,7 +5,7 @@ html, body, #renderCanvas {
     width: 100%; 
     height: 100%; 
     touch-action: none; 
-    background-color: #000;
+    background-color: rgb( 50, 52, 74 );
 }
 #died { 
     position: absolute; 
@@ -16,7 +16,7 @@ html, body, #renderCanvas {
     transform: translate(-50%,-50%);
     font-size: 8vw;
     color: red;
-    padding: 1vw;
+    padding: 2vw;
     opacity: 0;
     transition: opacity 2s ease-in-out;
 }

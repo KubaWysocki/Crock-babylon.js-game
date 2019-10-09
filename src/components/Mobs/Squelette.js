@@ -40,25 +40,24 @@ class Squelette {
     }
 
     configureMeshes( meshes ) {
-        
+
         const aromorNodeIds = {
             lvl1: [ 13 ,27, 29, 53, 55, 57, 59, 61, 63, 65, 67 ],
             lvl2: [ 13, 29, 65 ],
             lvl3: []
         }
         
-        const lvl1 = meshes.filter( mesh => 
-            aromorNodeIds.lvl2.some( armorNum => 
+        const armor = meshes.filter( mesh => 
+            aromorNodeIds.lvl1.some( armorNum => 
                 'node' + armorNum === mesh.id 
             ) 
         )
-        lvl1.forEach( mesh => mesh.isVisible = false )
+        armor.forEach( mesh => mesh.isVisible = false )
         
         meshes[0].scaling = new Vector3( .025, .025, .025 )
         meshes.forEach( mesh => mesh.isPickable = false )
 
         this.squeletteMeshes = meshes
-        this.squeletteArmors = []
     }
 
     configureAnimations( animations ) {
@@ -165,7 +164,7 @@ class Squelette {
                         true,
                         this.scene 
                     )
-                    setTimeout(() => deadParticles.dispose(), 300)
+                    setTimeout(() => deadParticles.dispose(), 400)
                     this.death()
                 }
             }
@@ -190,7 +189,7 @@ class Squelette {
                 true,
                 this.scene 
             )
-            setTimeout(() => deadParticles.dispose(), 300)
+            setTimeout(() => deadParticles.dispose(), 400)
             this.death()
         }
     }

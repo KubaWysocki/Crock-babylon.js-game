@@ -1,10 +1,8 @@
 import { 
     UniversalCamera,
     Vector3,
-    MeshBuilder,
     ActionManager,
     ExecuteCodeAction,
-    Texture,
     Ray,
     RayHelper,
     Color3,
@@ -13,14 +11,12 @@ import {
     Animation
 } from 'babylonjs'
 
-import { FireMaterial } from 'babylonjs-materials'
-import fire from '../../img/fire.jpeg'
-
-import fireballSound from '../../audio/fireball.wav'
-
 import createBounder from '../Effects/createBounder'
 import createPhysics from '../Effects/createPhysics'
 import createFireParticles from '../Effects/createFireParticles'
+
+import createFireball from './createFireball'
+import fireballSound from '../../audio/fireball.wav'
 
 import applySpeed from '../utilities/applySpeed'
 
@@ -41,7 +37,7 @@ class Player extends UniversalCamera {
 
         this.createSword( sword )
 
-        this.fireballSound = new Sound('fireballSound', fireballSound, scene )
+        this.fireballSound = new Sound( 'fireballSound', fireballSound, scene )
         
         this.health = 20
         this.speed = .15
@@ -130,36 +126,34 @@ class Player extends UniversalCamera {
         if( isWPressed ) moveWithSpeed( frontVector, 1.2 )
         if( isSPressed ) moveWithSpeed( backVector )
         if( isAPressed ) moveWithSpeed( leftVector )
-        if( isDPressed ) moveWithSpeed(rightVector)
+        if( isDPressed ) moveWithSpeed( rightVector )
 
         if( isSpacePressed && !this.isInAir && !this.isOnRamp ) {
             jumpVector = applySpeed( jumpVector, this.speed * 900 )
             jumpVector.y = 60
-            this.physicsImpostor.applyImpulse( jumpVector , this.bounder.position )
+            this.physicsImpostor.applyImpulse( jumpVector, this.bounder.position )
         }
         adjustPosition()
     }
 
     swordAttack( isLeftMouseClicked ) {
         const canAttack = performance.now() - this.swordAttackLock > 1000
-        if( isLeftMouseClicked && canAttack ) {
+        if( !isLeftMouseClicked || !canAttack ) return
+        this.swordAttackLock = performance.now()
 
-            this.swordAttackLock = performance.now()
-
-            const attack = this.scene.beginAnimation( this.sword.meshes[0], 0, 10 )
-            attack.waitAsync().then(()=> {
-                this.scene.beginAnimation( this.sword.meshes[0], 10, 60 )
-                const dir = this.getFrontPosition(1).subtract(this.position)
-                    dir.y = 0
-                    dir.normalize()
-                const attackRay = new Ray( this.bounder.position, dir, 4 )
-                const attackHit = this.scene.pickWithRay( attackRay )
-                if( attackHit.hit  ) {
-                    if( attackHit.pickedMesh.name.startsWith('squeletteBounder') ) 
-                        attackHit.pickedMesh.Squelette.getSwordDamage()
-                }
-            })
-        }
+        const attack = this.scene.beginAnimation( this.sword.meshes[0], 0, 10 )
+        attack.waitAsync().then(()=> {
+            this.scene.beginAnimation( this.sword.meshes[0], 10, 60 )
+            const dir = this.getFrontPosition(1).subtract(this.position)
+                dir.y = 0
+                dir.normalize()
+            const attackRay = new Ray( this.bounder.position, dir, 4 )
+            const attackHit = this.scene.pickWithRay( attackRay )
+            if( attackHit.hit  ) {
+                if( attackHit.pickedMesh.name.startsWith('squeletteBounder') ) 
+                    attackHit.pickedMesh.Squelette.getSwordDamage()
+            }
+        })
     }
     
     fireFireballs( isBPressed ) {
@@ -171,18 +165,14 @@ class Player extends UniversalCamera {
         
         setTimeout(() => performance.now() - this.fireFireballLock >= 1500 ? this.speed = .15 : null, 1500 )
         
-        const fireball = new MeshBuilder.CreateSphere( 'fireball', { segments: 16, diameter: 1 }, this.scene )
-            fireball.material = new FireMaterial( 'fireballMaterial', this.scene )
-            fireball.material.diffuseTexture = new Texture( fire, this.scene )
+        const fireball = createFireball( this.scene )
 
-        createFireParticles( 'fireball', fireball, true, this.scene )
-
-        let backPosition = this.getFrontPosition(-3)
+        const backPosition = this.getFrontPosition(-3)
         const missingShots = () => Math.random()*4 -2
 
         fireball.position = new Vector3( backPosition.x + missingShots(), this.position.y+1, backPosition.z + missingShots() )
             
-        let forceVector = this.getFrontPosition(15).subtract( fireball.position )
+        const forceVector = this.getFrontPosition(15).subtract( fireball.position )
             forceVector.y += 5
 
         fireball.physicsImpostor = createPhysics( 'fireball', fireball, this.scene )
