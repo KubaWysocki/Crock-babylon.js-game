@@ -13,12 +13,12 @@ import {
 
 import createBounder from '../Effects/createBounder'
 import createPhysics from '../Effects/createPhysics'
-import createFireParticles from '../Effects/createFireParticles'
+import createParticles from '../Effects/createParticles'
 
 import createFireball from './createFireball'
 import fireballSound from '../../audio/fireball.wav'
 
-import applySpeed from '../utilities/applySpeed'
+import applySpeed from '../Utilities/applySpeed'
 
 class Player extends UniversalCamera {
     constructor( canvas, scene, sword, name = 'player', position = new Vector3( -10, 14, -10 )) {
@@ -136,24 +136,25 @@ class Player extends UniversalCamera {
         adjustPosition()
     }
 
-    swordAttack( isLeftMouseClicked ) {
+    async swordAttack( isLeftMouseClicked ) {
         const canAttack = performance.now() - this.swordAttackLock > 1000
         if( !isLeftMouseClicked || !canAttack ) return
+
         this.swordAttackLock = performance.now()
 
         const attack = this.scene.beginAnimation( this.sword.meshes[0], 0, 10 )
-        attack.waitAsync().then(()=> {
-            this.scene.beginAnimation( this.sword.meshes[0], 10, 60 )
-            const dir = this.getFrontPosition(1).subtract(this.position)
-                dir.y = 0
-                dir.normalize()
-            const attackRay = new Ray( this.bounder.position, dir, 4 )
-            const attackHit = this.scene.pickWithRay( attackRay )
-            if( attackHit.hit  ) {
-                if( attackHit.pickedMesh.name.startsWith('squeletteBounder') ) 
-                    attackHit.pickedMesh.Squelette.getSwordDamage()
-            }
-        })
+
+        await attack.waitAsync()
+
+        this.scene.beginAnimation( this.sword.meshes[0], 10, 60 )
+        const dir = this.getFrontPosition(1).subtract(this.position)
+            dir.y = 0
+            dir.normalize()
+        const attackRay = new Ray( this.bounder.position, dir, 4 )
+        const attackHit = this.scene.pickWithRay( attackRay ).pickedMesh
+        if( attackHit  )
+            if( attackHit.name.startsWith('squeletteBounder') ) 
+                attackHit.Squelette.getSwordDamage()
     }
     
     fireFireballs( isBPressed ) {
@@ -225,7 +226,7 @@ class Player extends UniversalCamera {
 
         if( this.health <= 0 && !this.died ) {
             this.died = true
-            createFireParticles( 'playerDeath', new Vector3().copyFrom( this.bounder.position ), true, this.scene )
+            createParticles( 'playerDeath', new Vector3().copyFrom( this.bounder.position ), true, this.scene )
             document.getElementById('died').style.opacity = 1
         }
     }

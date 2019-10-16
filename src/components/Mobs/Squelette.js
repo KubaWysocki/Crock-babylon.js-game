@@ -6,9 +6,10 @@ import {
 
 import createBounder from '../Effects/createBounder'
 import createPhysics from '../Effects/createPhysics'
-import createFireParticles from '../Effects/createFireParticles'
+import createParticles from '../Effects/createParticles'
 
-import applySpeed from '../utilities/applySpeed'
+import applySpeed from '../Utilities/applySpeed'
+import createPortal from '../World/createPortal'
 
 class Squelette {
     constructor( squelette, scene, id ) {
@@ -28,7 +29,7 @@ class Squelette {
 
         this.physicsImpostor = createPhysics( 'squelette', this.bounder, scene )
 
-        this.fireParticles = createFireParticles( 'fireSquelette', this.bounder, false, scene )
+        this.fireParticles = createParticles( 'fireSquelette', this.bounder, false, scene )
 
         this.distance
         this.health = 10
@@ -158,7 +159,7 @@ class Squelette {
                 this.health -= 1
                 hitPoints++    
                 if( this.health < 0 ) {
-                    const deadParticles = createFireParticles( 
+                    const deadParticles = createParticles( 
                         'fireSqueletteDeath',
                         new Vector3().copyFrom( this.bounder.position ), 
                         true,
@@ -183,7 +184,7 @@ class Squelette {
             this.bounder.position
         )
         if( this.health <= 0 ) {
-            const deadParticles = createFireParticles( 
+            const deadParticles = createParticles( 
                 'meeleSqueletteDeath',
                 new Vector3().copyFrom( this.bounder.position ), 
                 true,
@@ -202,6 +203,8 @@ class Squelette {
         this.skeletons.forEach( skeleton => skeleton.dispose())
         this.scene.squelettes = this.scene.squelettes.filter( squelette => squelette.meshes[0]._isDisposed ? false : true )
         delete this
+
+        if( this.scene.squelettes.length === 0 ) createPortal( this.scene )
     }
 }
 export default Squelette

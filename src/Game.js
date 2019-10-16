@@ -17,7 +17,7 @@ import Squelette from './components/Mobs/Squelette'
 const Game = async ( engine, canvas ) => {
     const scene = new Scene( engine )
 
-    await modelLoader( scene, { squelettes: 10 } )
+    await modelLoader( scene, { squelettes: 5 } )
 
     scene.enablePhysics( null, new CannonJSPlugin( true, 100, cannon ))
 
@@ -34,6 +34,6 @@ const Game = async ( engine, canvas ) => {
 
         player.behavior( controls )
     })
-    return scene
+    engine.activeScene = scene
 }
 export default Game

@@ -5,6 +5,15 @@ function createPhysics ( type, mesh, scene ) {
     const options = {}
 
     switch( type ) {
+        case 'static': 
+            options.mass = 0
+            options.friction = 1
+            options.restitution = 0
+
+            physicsImpostor = new PhysicsImpostor( mesh, PhysicsImpostor.BoxImpostor, options, scene )
+            if(physicsImpostor.physicsBody) //this if somehow makes it work properly 
+                physicsImpostor.physicsBody.collisionFilterGroup = -1
+            break
         case 'player':
             options.mass = 20
             options.friction = 1
@@ -19,15 +28,6 @@ function createPhysics ( type, mesh, scene ) {
 
             physicsImpostor = new PhysicsImpostor( mesh, PhysicsImpostor.CylinderImpostor, options, scene )
             physicsImpostor.physicsBody.collisionFilterMask = 1
-            break
-        case 'ground': 
-            options.mass = 0
-            options.friction = 1
-            options.restitution = 0
-
-            physicsImpostor = new PhysicsImpostor( mesh, PhysicsImpostor.BoxImpostor, options, scene )
-            if(physicsImpostor.physicsBody) //this if somehow makes it work properly 
-                physicsImpostor.physicsBody.collisionFilterGroup = -1
             break
         case 'fireball':
             options.mass = 1

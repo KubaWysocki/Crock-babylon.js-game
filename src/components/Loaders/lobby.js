@@ -31,17 +31,15 @@ const lobby = ( engine, canvas ) => {
         canvas.requestPointerLock()
         window.addEventListener( 'click', () => canvas.requestPointerLock() )
         Game( engine, canvas )
-            .then( gameScene => {
+            .then(() => {
                 lobbyScene.dispose()
                 advancedTexture.dispose()
-
-                engine.activeScene = gameScene
             })
     })
 
     let modelCounter = 0
     const incrementCounter = () => modelCounter += 1
-    const numOfMeshesToLoad = 2
+    const numOfMeshesToLoad = 3
 
     modelLoader( lobbyScene, incrementCounter )
         .then(() => {
@@ -52,7 +50,7 @@ const lobby = ( engine, canvas ) => {
                 advancedTexture.removeControl( controls.loadingBar )
     
                 advancedTexture.addControl( startButton )
-            }, 500)
+            }, 1000)
         })
 
     let alpha = 4.5

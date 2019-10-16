@@ -20,7 +20,7 @@ const createGround = ( scene ) => {
         groundMaterial.diffuseTexture = texture
     const ground = MeshBuilder.CreateGround( 'ground', { width: 300, height: 300 }, scene)
         ground.material = groundMaterial
-        ground.physicsImpostor = createPhysics( 'ground', ground, scene )
+        ground.physicsImpostor = createPhysics( 'static', ground, scene )
 
     //ramp    
     const ramp = MeshBuilder.CreateBox( 'ramp', { width: 10, height: .1, depth: 50 }, scene )
@@ -29,13 +29,13 @@ const createGround = ( scene ) => {
         barier.parent = ramp
         barier.position.x += 4.5
         barier.position.y += 1.1
-        barier.physicsImpostor = createPhysics( 'ground', barier, scene )
+        barier.physicsImpostor = createPhysics( 'static', barier, scene )
 
     const ndBarier = barier.clone( 'barier2', ramp )
         ndBarier.position.x -= 9
-        ndBarier.physicsImpostor = createPhysics( 'ground', ndBarier, scene )
+        ndBarier.physicsImpostor = createPhysics( 'static', ndBarier, scene )
 
-        ramp.physicsImpostor = createPhysics( 'ground', ramp, scene )
+        ramp.physicsImpostor = createPhysics( 'static', ramp, scene )
         ramp.rotationQuaternion = new Quaternion.RotationAxis( new Vector3.Left(), Math.PI / 8 )
         ramp.position.set( 20, 9, 40 )
 
