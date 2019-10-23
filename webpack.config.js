@@ -1,3 +1,4 @@
+/* eslint-disable */
 const path = require('path')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -19,11 +20,11 @@ module.exports = {
 						loader: 'babel-loader',
 						options: {
 							presets: [
-								['@babel/preset-env', {
+								[ '@babel/preset-env', {
 									'targets': {
 										'node': 'current'
 									}
-								}]
+								} ]
 							]
 						}
 					},
@@ -43,7 +44,7 @@ module.exports = {
 			},
 			{
 				test: /\.(gltf)$/,
-				use: [{ loader: 'gltf-webpack-loader' }]
+				use: [ { loader: 'gltf-webpack-loader' } ]
 			}
 		],
 	},

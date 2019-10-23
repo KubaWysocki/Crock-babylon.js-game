@@ -13,20 +13,27 @@ module.exports = {
 		'sourceType': 'module'
 	},
 	'rules': {
-		'indent': [ 'error', 'tab' ],
-		'linebreak-style': [ 'error', 'unix' ],
+		'indent': [ 'error', 4 ],
+		'linebreak-style': 'error',
 		'quotes': [ 'error', 'single' ],
+		'prefer-template': 'warn',
 		'semi': [ 'error', 'never'],
 		'no-console': 'warn',
-		'no-extra-parens': [ 'error', 'all' ],
+		'no-extra-parens': 'error', 
 		'no-multi-spaces': 'error',
+		'no-trailing-spaces': 'error',
+		'space-before-function-paren': [ 'error', 'never' ],
+		'space-before-blocks': [ 'error', 'never' ],
+		'space-in-parens': [ 'error', 'always' ],
 		'array-bracket-spacing': [ 'error', 'always' ],
-		'block-spacing': [ 'error', 'always' ],
+		'block-spacing': 'error',
 		'comma-spacing': 'error',
 		'computed-property-spacing': [ 'error', 'always' ],
+		'func-call-spacing': 'error',
+		'rest-spread-spacing': 'error',
+		'arrow-spacing': 'error',
+		'object-curly-spacing': [ 'error', 'always' ],
 		'eol-last': [ 'error', 'never' ],
-		'indent': [ 'error', 'tab' ],
 		'lines-between-class-members': 'error',
-		'func-call-spacing': 'error'
 	}
 }
